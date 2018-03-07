@@ -4,9 +4,12 @@
 #include "LTC6904.h"
 #include "YM2612.h"
 #include "SN76489.h"
+#include "SPIRAM.h"
 
 LTC6904 ymClock(0);
 LTC6904 snClock(1);
+
+SPIRAM ram(PB11);
 
 //const int debugLED = PB12;
 
@@ -25,10 +28,10 @@ const int YM_RD = PA15;
 const int YM_WR = PA12;
 const int YM_A0 = PA11;
 const int YM_A1 = PB0;
-const int YM_IC = PA3; 
+const int YM_IC = PB4; 
 const int YM_IRQ = NULL;
 
-const int SN_WE = PB4;
+const int SN_WE = PB5;
 
 YM2612 ym2612(dataBusPins, YM_CS, YM_RD, YM_WR, YM_A0, YM_A1, YM_IRQ, YM_IC);
 SN76489 sn76489(dataBusPins, SN_WE);
@@ -58,8 +61,8 @@ unsigned long pauseTime = 0;
 unsigned long startTime = 0;
 
 //Song Data Variables
-#define MAX_PCM_BUFFER_SIZE 1024 //In bytes
-uint8_t pcmBuffer[MAX_PCM_BUFFER_SIZE];
+#define MAX_PCM_BUFFER_SIZE 64000 //In bytes (Size of SPI_RAM)
+//uint8_t pcmBuffer[MAX_PCM_BUFFER_SIZE];
 uint32_t pcmBufferPosition = 0;
 uint32_t loopOffset = 0;
 uint16_t loopCount = 0;
@@ -244,16 +247,7 @@ void GetHeaderData() //Scrape off the important VGM data from the header, then d
   vgm.seek(bufferReturnPosition); //Send the file seek back to the original buffer position so we don't confuse our program.
   waitSamples = ReadBuffer32(); //0x18->0x1B : Get wait Samples count
   loopOffset = ReadBuffer32();  //0x1C->0x1F : Get loop offset Postition
-  for(int i = 0; i<4; i++) ReadBuffer32(); //Skip to 0x30
-  clockSpeed = ReadBuffer32();
-  // if(clockSpeed == 0 || clockSpeed > 4200000)
-  //   clockSpeed = 3579545; //Default to colorburst
-  // if(clockSpeed != prevClockSpeed)
-  //   ltc.SetFrequency(clockSpeed);
-  // prevClockSpeed = clockSpeed;
-  delay(50);
-  //DrawOLEDInfo();
-
+  for(int i = 0; i<5; i++) ReadBuffer32(); //Skip right to the VGM data offset position;
   uint32_t vgmDataOffset = ReadBuffer32();
   if(vgmDataOffset == 0 || vgmDataOffset == 12) //VGM starts at standard 0x40
   {
@@ -261,10 +255,8 @@ void GetHeaderData() //Scrape off the important VGM data from the header, then d
   }
   else
   {
-    for(int i = 0; i < vgmDataOffset-4; i++) GetByte();  //VGM starts at different data position (Probably VGM spec 1.7+)
+    for(int i = 0; i < vgmDataOffset; i++) GetByte();  //VGM starts at different data position (Probably VGM spec 1.7+)
   }
-  //Offset manually set to -4 due to overshooting the data offset. This does not seem normal and will need to be fixed.
-  //Serial.println("Starting postion: "); Serial.println(vgm.position(), HEX);
 }
 
 enum StartUpProfile {FIRST_START, NEXT, PREVIOUS, RNG, REQUEST};
@@ -556,6 +548,31 @@ void loop()
     //delay(20);
     //delayMicroseconds(WAIT50TH); //Actual time is 20ms (1/50 of a second)
     break;
+    case 0x67:
+    {
+      //Serial.print("DATA BLOCK 0x67.  PCM Data Size: ");
+      GetByte();
+      GetByte(); //Skip 0x66 and data type
+      pcmBufferPosition = bufferPos;
+      uint32_t PCMdataSize = 0;
+      for ( int i = 0; i < 4; i++ )
+      {
+        PCMdataSize += ( uint32_t( GetByte() ) << ( 8 * i ));
+      }
+      if(PCMdataSize > MAX_PCM_BUFFER_SIZE)
+        StartupSequence(NEXT);
+      //Serial.println(PCMdataSize);
+
+      for ( int i = 0; i < PCMdataSize; i++ )
+      {
+          if(PCMdataSize <= MAX_PCM_BUFFER_SIZE)
+          {
+            ram.WriteByte(i, GetByte()); 
+          }
+      }
+      //Serial.println("Finished buffering PCM");
+      break;
+    }
     case 0x70:
     case 0x71:
     case 0x72:
@@ -582,43 +599,43 @@ void loop()
       //delay(preCalced7nDelays[wait]);
     break;
     }
-      case 0x80:
-      case 0x81:
-      case 0x82:
-      case 0x83:
-      case 0x84:
-      case 0x85:
-      case 0x86:
-      case 0x87:
-      case 0x88:
-      case 0x89:
-      case 0x8A:
-      case 0x8B:
-      case 0x8C:
-      case 0x8D:
-      case 0x8E:
-      case 0x8F:
-        {
-        uint32_t wait = cmd & 0x0F;
-        byte address = 0x2A;
-        byte data = pcmBuffer[pcmBufferPosition++];
-        ym2612.SendDataPins(address, data, 0);
-        startTime = timeInMicros;
-        pauseTime = preCalced8nDelays[wait];
-        }
-        break;
-      case 0xE0:
+    case 0x80:
+    case 0x81:
+    case 0x82:
+    case 0x83:
+    case 0x84:
+    case 0x85:
+    case 0x86:
+    case 0x87:
+    case 0x88:
+    case 0x89:
+    case 0x8A:
+    case 0x8B:
+    case 0x8C:
+    case 0x8D:
+    case 0x8E:
+    case 0x8F:
+    {
+    uint32_t wait = cmd & 0x0F;
+    byte address = 0x2A;
+    unsigned char data = ram.ReadByte(pcmBufferPosition++);
+    ym2612.SendDataPins(address, data, 0);
+    Serial.print("RAM READ: "); Serial.println(data, HEX);
+    startTime = timeInMicros;
+    pauseTime = preCalced8nDelays[wait];
+    break;
+    }
+    case 0xE0:
+    {
+      //Serial.print("LOCATION: ");
+      //Serial.print(parseLocation, HEX);
+      //Serial.print(" - PCM SEEK 0xE0. NEW POSITION: ");
+      pcmBufferPosition = 0;
+      for ( int i = 0; i < 4; i++ )
       {
-        //Serial.print("LOCATION: ");
-        //Serial.print(parseLocation, HEX);
-        //Serial.print(" - PCM SEEK 0xE0. NEW POSITION: ");
-
-        pcmBufferPosition = 0;
-        for ( int i = 0; i < 4; i++ )
-        {
-          pcmBufferPosition += ( uint32_t( GetByte() ) << ( 8 * i ));
-        }
+        pcmBufferPosition += ( uint32_t( GetByte() ) << ( 8 * i ));
       }
+    }
     case 0x66:
       if(loopOffset == 0)
         loopOffset = 64;
@@ -642,11 +659,12 @@ void setup()
     // pinMode(loop_btn, INPUT_PULLUP);
     // pinMode(shuf_btn, INPUT_PULLUP);
     Wire.begin();
-    ymClock.SetFrequency(7670454);
+    SPI.begin();
+    ymClock.SetFrequency(7670453);
     snClock.SetFrequency(3579545);
     Serial.begin(9600);
     ym2612.Reset();
-
+    
     // u8g2.begin();
     // u8g2.setFont(u8g2_font_fub11_tf);
     // u8g2.clearBuffer();
@@ -654,7 +672,7 @@ void setup()
     // u8g2.drawStr(0,32,"YM2612, 2018");
     // u8g2.sendBuffer();
     delay(3000);
-
+    Serial.println("INIT GOOD!");
     if(!SD.begin())
     {
         Serial.println("Card Mount Failed");
@@ -664,6 +682,7 @@ void setup()
         // u8g2.sendBuffer();
         return;
     }
+    ram.Init();
     RemoveSVI();
     File countFile;
     while ( countFile.openNext( SD.vwd(), O_READ ))

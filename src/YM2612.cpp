@@ -19,16 +19,20 @@ YM2612::YM2612(int * dataPins, int CS, int RD, int WR, int A0, int A1, int IRQ, 
     pinMode(_RD, OUTPUT);
     pinMode(_WR, OUTPUT);
     pinMode(_A0, OUTPUT);
-    pinMode(_IRQ, OUTPUT);
+    pinMode(_A1, OUTPUT);
     pinMode(_IC, OUTPUT);
+
+    if(_IRQ != NULL)
+    {
+        pinMode(_IRQ, INPUT);
+        digitalWrite(_IRQ, LOW);
+    }
 
     digitalWrite(_CS, HIGH);
     digitalWrite(_RD, HIGH);
     digitalWrite(_WR, HIGH);
     digitalWrite(_A0, LOW);
     digitalWrite(_A1, LOW);
-    if(_IRQ != NULL)
-        digitalWrite(_IRQ, LOW);
     digitalWrite(_IC, HIGH);
 }
 
