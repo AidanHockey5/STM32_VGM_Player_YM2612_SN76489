@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <SPI.h>
 #include "SdFat.h"
 #include <Wire.h>
 #include "LTC6904.h"
@@ -9,18 +10,18 @@
 LTC6904 ymClock(0);
 LTC6904 snClock(1);
 
-SPIRAM ram(PB11);
+SPIRAM ram(PB12);
 
 //const int debugLED = PB12;
 
 SdFat SD;
 File vgm;
 
-const int prev_btn = PB12;
-const int rand_btn = PB13;
-const int next_btn = PB14;
-const int loop_btn = PB15;
-const int shuf_btn = PA8;
+// const int prev_btn = PB12;
+// const int rand_btn = PB13;
+// const int next_btn = PB14;
+// const int loop_btn = PB15;
+// const int shuf_btn = PA8;
 
 int dataBusPins[8] = {PB8, PB9, PC13, PC14, PC15, PA0, PA1, PA2};
 const int YM_CS = PB3;
@@ -61,7 +62,7 @@ unsigned long pauseTime = 0;
 unsigned long startTime = 0;
 
 //Song Data Variables
-#define MAX_PCM_BUFFER_SIZE 64000 //In bytes (Size of SPI_RAM)
+#define MAX_PCM_BUFFER_SIZE 124000 //In bytes (Size of SPI_RAM)
 //uint8_t pcmBuffer[MAX_PCM_BUFFER_SIZE];
 uint32_t pcmBufferPosition = 0;
 uint32_t loopOffset = 0;
@@ -479,7 +480,7 @@ void loop()
 
   if(buttonLock)
   {
-    if(digitalRead(loop_btn) && digitalRead(shuf_btn))
+    //if(digitalRead(loop_btn) && digitalRead(shuf_btn))
       buttonLock = false;
   }
 
@@ -620,7 +621,7 @@ void loop()
     byte address = 0x2A;
     unsigned char data = ram.ReadByte(pcmBufferPosition++);
     ym2612.SendDataPins(address, data, 0);
-    Serial.print("RAM READ: "); Serial.println(data, HEX);
+    //Serial.print("RAM READ: "); Serial.println(data, HEX);
     startTime = timeInMicros;
     pauseTime = preCalced8nDelays[wait];
     break;
@@ -635,6 +636,7 @@ void loop()
       {
         pcmBufferPosition += ( uint32_t( GetByte() ) << ( 8 * i ));
       }
+      break;
     }
     case 0x66:
       if(loopOffset == 0)
