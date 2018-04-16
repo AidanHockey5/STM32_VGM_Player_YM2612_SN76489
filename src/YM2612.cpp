@@ -45,28 +45,53 @@ void YM2612::Reset()
 
 void YM2612::WriteDataPins(unsigned char data) //Digital I/O
 {
-    for(int i=0; i<8; i++)
-    {
-      digitalWrite(*(_dataPins+i), ((data >> i)&1));
-    }
+     //This is the price you pay for bitwise pin toggling on abitrary GPIO busses
+    ((data >> 0)&1) == HIGH ? GPIOB->regs->ODR |= 1 << 8 : GPIOB->regs->ODR &= ~(1 << 8); //PB8
+    ((data >> 1)&1) == HIGH ? GPIOB->regs->ODR |= 1 << 9 : GPIOB->regs->ODR &= ~(1 << 9); //PB9
+    ((data >> 2)&1) == HIGH ? GPIOC->regs->ODR |= 1 << 13 : GPIOC->regs->ODR &= ~(1 << 13); //PC13
+    ((data >> 3)&1) == HIGH ? GPIOC->regs->ODR |= 1 << 14 : GPIOC->regs->ODR &= ~(1 << 14); //PC14
+    ((data >> 4)&1) == HIGH ? GPIOC->regs->ODR |= 1 << 15 : GPIOC->regs->ODR &= ~(1 << 15); //PC15
+    ((data >> 5)&1) == HIGH ? GPIOA->regs->ODR |= 1 << 0 : GPIOA->regs->ODR &= ~(1 << 0); //PA0
+    ((data >> 6)&1) == HIGH ? GPIOA->regs->ODR |= 1 << 1 : GPIOA->regs->ODR &= ~(1 << 1); //PA0
+    ((data >> 7)&1) == HIGH ? GPIOA->regs->ODR |= 1 << 2 : GPIOA->regs->ODR &= ~(1 << 2); //PA0
+    // for(int i=0; i<8; i++)
+    // {
+    //   digitalWrite(*(_dataPins+i), ((data >> i)&1));
+    // }
 }
 
 void YM2612::SendDataPins(unsigned char addr, unsigned char data, bool setA1) //0x52 = A1 LOW, 0x53 = A1 HIGH
 {
-      digitalWrite(_A1, setA1);
-      digitalWrite(_A0, LOW);
-      digitalWrite(_CS, LOW);
+      setA1 == HIGH ? GPIOB->regs->ODR |= 1 << 0 : GPIOB->regs->ODR &= ~(1 << 0); //_A1 PB0
+      //digitalWrite(_A1, setA1);
+      GPIOA->regs->ODR &= ~(0b0000100000000000); //_A0 LOW
+      GPIOB->regs->ODR &= ~(0b0000100000001000); //_CS LOW
       WriteDataPins(addr);
-      digitalWrite(_WR, LOW);
-              delayMicroseconds(1);
-      digitalWrite(_WR, HIGH);
-      digitalWrite(_CS, HIGH);
-              delayMicroseconds(1);
-      digitalWrite(_A0, HIGH);
-      digitalWrite(_CS, LOW);
+      GPIOA->regs->ODR &= ~(0b0001000000000000); //_WR LOW
+      //delay_us(1);
+      GPIOA->regs->ODR |= 0b0001000000000000;    //_WR HIGH
+      GPIOB->regs->ODR |= 0b0000100000001000;    //_CS HIGH
+      delay_us(1);
+      GPIOA->regs->ODR |= 0b0000100000000000;    //_A0 HIGH
+      GPIOB->regs->ODR &= ~(0b0000100000001000); //_CS LOW
       WriteDataPins(data);
-      digitalWrite(_WR, LOW);
-              delayMicroseconds(1);
-      digitalWrite(_WR, HIGH);
-      digitalWrite(_CS, HIGH);
+      GPIOA->regs->ODR &= ~(0b0001000000000000); //_WR LOW
+      //delay_us(1);
+      GPIOA->regs->ODR |= 0b0001000000000000;    //_WR HIGH
+      GPIOB->regs->ODR |= 0b0000100000001000;    //_CS HIGH
+    //   digitalWrite(_A0, LOW);
+    //   digitalWrite(_CS, LOW);
+    //   WriteDataPins(addr);
+    //   digitalWrite(_WR, LOW);
+    //           delayMicroseconds(1);
+    //   digitalWrite(_WR, HIGH);
+    //   digitalWrite(_CS, HIGH);
+    //           delayMicroseconds(1);
+    //   digitalWrite(_A0, HIGH);
+    //   digitalWrite(_CS, LOW);
+    //   WriteDataPins(data);
+    //   digitalWrite(_WR, LOW);
+    //           delayMicroseconds(1);
+    //   digitalWrite(_WR, HIGH);
+    //   digitalWrite(_CS, HIGH);
 }

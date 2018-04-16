@@ -555,21 +555,14 @@ void loop()
       GetByte();
       GetByte(); //Skip 0x66 and data type
       pcmBufferPosition = bufferPos;
-      uint32_t PCMdataSize = 0;
-      for ( int i = 0; i < 4; i++ )
-      {
-        PCMdataSize += ( uint32_t( GetByte() ) << ( 8 * i ));
-      }
+      uint32_t PCMdataSize = ReadBuffer32();
       if(PCMdataSize > MAX_PCM_BUFFER_SIZE)
         StartupSequence(NEXT);
       //Serial.println(PCMdataSize);
 
-      for ( int i = 0; i < PCMdataSize; i++ )
+      for ( uint32_t i = 0; i < PCMdataSize; i++ )
       {
-          if(PCMdataSize <= MAX_PCM_BUFFER_SIZE)
-          {
-            ram.WriteByte(i, GetByte()); 
-          }
+        ram.WriteByte(i, GetByte()); 
       }
       //Serial.println("Finished buffering PCM");
       break;
@@ -621,7 +614,8 @@ void loop()
     byte address = 0x2A;
     unsigned char data = ram.ReadByte(pcmBufferPosition++);
     ym2612.SendDataPins(address, data, 0);
-    //Serial.print("RAM READ: "); Serial.println(data, HEX);
+    //Serial.print("RAM READ: "); 
+    //Serial.println(data, HEX);
     startTime = timeInMicros;
     pauseTime = preCalced8nDelays[wait];
     break;
@@ -631,11 +625,11 @@ void loop()
       //Serial.print("LOCATION: ");
       //Serial.print(parseLocation, HEX);
       //Serial.print(" - PCM SEEK 0xE0. NEW POSITION: ");
-      pcmBufferPosition = 0;
-      for ( int i = 0; i < 4; i++ )
-      {
-        pcmBufferPosition += ( uint32_t( GetByte() ) << ( 8 * i ));
-      }
+      pcmBufferPosition = ReadBuffer32();
+      // for ( int i = 0; i < 4; i++ )
+      // {
+      //   pcmBufferPosition += ( uint32_t( GetByte() ) << ( 8 * i ));
+      // }
       break;
     }
     case 0x66:
