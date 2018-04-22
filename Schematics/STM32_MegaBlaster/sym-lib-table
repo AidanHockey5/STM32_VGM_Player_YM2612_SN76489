@@ -1,0 +1,12 @@
+(sym_lib_table
+  (lib (name bluepill_breakouts)(type Legacy)(uri ${KIPRJMOD}/libraries/bluepill_breakouts.lib)(options "")(descr ""))
+  (lib (name ym2612)(type Legacy)(uri ${KIPRJMOD}/libraries/ym2612.lib)(options "")(descr ""))
+  (lib (name sn769486)(type Legacy)(uri ${KIPRJMOD}/libraries/sn769486.lib)(options "")(descr ""))
+  (lib (name CH340G)(type Legacy)(uri ${KIPRJMOD}/libraries/CH340G.lib)(options "")(descr ""))
+  (lib (name LTC6903)(type Legacy)(uri ${KIPRJMOD}/libraries/LTC6903.lib)(options "")(descr ""))
+  (lib (name 23LC1024)(type Legacy)(uri ${KIPRJMOD}/libraries/23LC1024.lib)(options "")(descr ""))
+  (lib (name TPA3122D2)(type Legacy)(uri ${KIPRJMOD}/libraries/TPA3122D2.lib)(options "")(descr ""))
+  (lib (name LM2596S-5.0)(type Legacy)(uri ${KIPRJMOD}/libraries/LM2596S-5.0.lib)(options "")(descr ""))
+  (lib (name 2041021-4)(type Legacy)(uri ${KIPRJMOD}/libraries/2041021-4.lib)(options "")(descr ""))
+  (lib (name I2C_OLED_Display_1_3)(type Legacy)(uri ${KIPRJMOD}/libraries/I2C_OLED_Display_1_3.lib)(options "")(descr ""))
+)
