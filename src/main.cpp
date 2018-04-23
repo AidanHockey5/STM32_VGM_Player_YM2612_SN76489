@@ -20,11 +20,10 @@ U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0);
 SdFat SD;
 File vgm;
 
-// const int prev_btn = PB12;
-// const int rand_btn = PB13;
-// const int next_btn = PB14;
-// const int loop_btn = PB15;
-// const int shuf_btn = PA8;
+const int prev_btn = PB11;
+const int rand_btn = PB10;
+const int next_btn = PB1;
+const int option_btn = PA3;
 
 int dataBusPins[8] = {PB8, PB9, PC13, PC14, PC15, PA0, PA1, PA2};
 const int YM_CS = PB3;
