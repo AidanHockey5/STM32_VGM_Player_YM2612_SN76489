@@ -915,8 +915,6 @@ Wire Wire Line
 	2900 3050 2700 3050
 Connection ~ 2900 3050
 Connection ~ 3100 2950
-Wire Wire Line
-	2700 2950 2900 2950
 $Comp
 L power:GND #PWR0129
 U 1 1 5ADFB561
@@ -2401,9 +2399,6 @@ Text Notes 12150 1550 0    50   ~ 0
 Amplification and output
 Text Notes 12350 5250 0    50   ~ 0
 Pre-amp
-Connection ~ 2900 2950
-Wire Wire Line
-	2900 2950 3100 2950
 Wire Notes Line
 	2250 10300 8700 10300
 Wire Wire Line
@@ -2483,10 +2478,10 @@ $EndComp
 Wire Wire Line
 	5550 2550 5550 2850
 $Comp
-L power:GND #PWR?
+L power:GND #PWR0156
 U 1 1 5AEDE0C9
 P 10000 2250
-F 0 "#PWR?" H 10000 2000 50  0001 C CNN
+F 0 "#PWR0156" H 10000 2000 50  0001 C CNN
 F 1 "GND" V 10005 2122 50  0000 R CNN
 F 2 "" H 10000 2250 50  0001 C CNN
 F 3 "" H 10000 2250 50  0001 C CNN
@@ -2495,4 +2490,6 @@ F 3 "" H 10000 2250 50  0001 C CNN
 $EndComp
 Wire Notes Line
 	2250 7700 8700 7700
+Wire Wire Line
+	2700 2950 3100 2950
 $EndSCHEMATC

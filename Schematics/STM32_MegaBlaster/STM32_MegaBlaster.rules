@@ -1,0 +1,123 @@
+
+(rules PCB STM32_MegaBlaster
+  (snap_angle 
+    fortyfive_degree
+  )
+  (autoroute_settings
+    (fanout off)
+    (autoroute on)
+    (postroute on)
+    (vias on)
+    (via_costs 50)
+    (plane_via_costs 5)
+    (start_ripup_costs 100)
+    (start_pass_no 222)
+    (layer_rule F.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 2.5)
+    )
+    (layer_rule B.Cu
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 1.7)
+    )
+  )
+  (rule
+    (width 250.0)
+    (clear 200.2)
+    (clear 125.0 (type smd_to_turn_gap))
+    (clear 50.0 (type smd_smd))
+  )
+  (padstack "Via[0-1]_800:400_um"
+    (shape
+      (circle F.Cu 800.0 0.0 0.0)
+    )
+    (shape
+      (circle B.Cu 800.0 0.0 0.0)
+    )
+    (attach off)
+  )
+  (via 
+    "Via[0-1]_800:400_um" "Via[0-1]_800:400_um" default
+  )
+  (via 
+    "Via[0-1]_800:400_um-kicad_default" "Via[0-1]_800:400_um" "kicad_default"
+  )
+  (via 
+    "Via[0-1]_800:400_um-12v" "Via[0-1]_800:400_um" 12v
+  )
+  (via 
+    "Via[0-1]_800:400_um-5v" "Via[0-1]_800:400_um" 5v
+  )
+  (via_rule
+    default "Via[0-1]_800:400_um"
+  )
+  (via_rule
+    "kicad_default" "Via[0-1]_800:400_um-kicad_default"
+  )
+  (via_rule
+    12v "Via[0-1]_800:400_um-12v"
+  )
+  (via_rule
+    5v "Via[0-1]_800:400_um-5v"
+  )
+  (class default
+    (clearance_class default)
+    (via_rule default)
+    (rule
+      (width 250.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+  (class "kicad_default"
+    GND AGND AVCC +3V3 "Net-(C9-Pad1)" "Net-(C10-Pad1)" "Net-(C11-Pad1)" "Net-(C12-Pad1)"
+    "AVCC_DIV2" "Net-(C19-Pad1)" MOR "Net-(C20-Pad2)" MOL "Net-(C21-Pad2)" "Net-(C22-Pad2)" "Net-(C23-Pad1)"
+    "Net-(C24-Pad2)" "Net-(C25-Pad1)" "Net-(C27-Pad2)" "PRE_L" "PRE_R" "Net-(C28-Pad2)" "Net-(C29-Pad1)" "Net-(C30-Pad1)"
+    "Net-(C31-Pad1)" "Net-(C31-Pad2)" "Net-(C32-Pad1)" "Net-(C32-Pad2)" "Net-(C33-Pad2)" "L_OUT" "Net-(C35-Pad2)" "R_OUT"
+    "Net-(D1-Pad1)" "SD_CS" "SD_MOSI" "SD_SCK" "SD_MISO" "Net-(J1-Pad8)" "Net-(J1-Pad9)" "Net-(J1-Pad10)"
+    "Net-(J1-Pad11)" "Net-(J1-Pad12)" "Net-(J2-Pad5)" "Net-(J2-Pad3)" "Net-(J2-Pad2)" "Net-(J3-Pad1)" "Net-(J4-Pad5)" "Net-(R1-Pad2)"
+    "I2C_SCL" "Net-(R24-Pad1)" "Net-(R26-Pad1)" PREV "Net-(SW1-Pad2)" "Net-(SW1-Pad4)" "Net-(SW2-Pad4)" "Net-(SW2-Pad2)"
+    RAND NEXT "Net-(SW3-Pad2)" "Net-(SW3-Pad4)" "Net-(SW4-Pad4)" "Net-(SW4-Pad2)" OPTION "SN_OUT"
+    "Net-(U1-Pad1)" D2 D3 D4 D5 D6 D7 "YM_A1"
+    "Net-(U1-Pad17)" "Net-(U1-Pad18)" "RAM_CS" "RAM_SCK" "RAM_MISO" "RAM_MOSI" "Net-(U1-Pad25)" TX
+    RX "YM_A0" "YM_WR" "YM_RD" "YM_CS" "YM_IC" "SN_WE" D0
+    D1 "Net-(U1-Pad40)" "Net-(U1-Pad41)" "Net-(U1-Pad42)" "SN_CLK" "Net-(U2-Pad4)" "Net-(U2-Pad9)" "YM_CLK"
+    "Net-(U3-Pad10)" "Net-(U3-Pad13)" "Net-(U4-Pad13)" "Net-(U4-Pad14)" "Net-(U4-Pad12)" "Net-(U4-Pad11)" "Net-(U4-Pad9)" "Net-(U4-Pad10)"
+    "Net-(U4-Pad15)" "Net-(U5-Pad5)" "Net-(U6-Pad5)" "Net-(U7-Pad3)" "Net-(J4-Pad3)" "Net-(J4-Pad2)" "Net-(J4-Pad1)" "I2C_SDA"
+    (clearance_class "kicad_default")
+    (via_rule kicad_default)
+    (rule
+      (width 250.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+  (class 12v
+    +12V
+    (clearance_class 12v)
+    (via_rule 12v)
+    (rule
+      (width 1000.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+  (class 5v
+    +5V
+    (clearance_class 5v)
+    (via_rule 5v)
+    (rule
+      (width 500.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+)
