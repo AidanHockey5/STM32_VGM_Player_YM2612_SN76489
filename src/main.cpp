@@ -480,26 +480,25 @@ void loop()
       break;
     }
   }
-  // if(!digitalRead(next_btn))
-  //   StartupSequence(NEXT);
-  // if(!digitalRead(prev_btn))
-  //   StartupSequence(PREVIOUS);
-  // if(!digitalRead(rand_btn))
-  //   StartupSequence(RNG);
-  // if(!digitalRead(shuf_btn) && !buttonLock)
-  // {
-  //   playMode == SHUFFLE ? playMode = IN_ORDER : playMode = SHUFFLE;
-  //   DrawOLEDInfo();
-  //   playMode == SHUFFLE ? Serial.println("SHUFFLE ON") : Serial.println("SHUFFLE OFF");
-  //   buttonLock = true;
-  // }
-  // if(!digitalRead(loop_btn) && !buttonLock)
-  // {
-  //   playMode == LOOP ? playMode = IN_ORDER : playMode = LOOP;
-  //   DrawOLEDInfo();
-  //   playMode == LOOP ? Serial.println("LOOP ON") : Serial.println("LOOP OFF"); 
-  //   buttonLock = true;
-  // }
+  if(!digitalRead(next_btn))
+    StartupSequence(NEXT);
+  if(!digitalRead(prev_btn))
+    StartupSequence(PREVIOUS);
+  if(!digitalRead(rand_btn))
+    StartupSequence(RNG);
+  if(!digitalRead(option_btn) && !buttonLock)
+  {
+    if(playMode == SHUFFLE)
+      playMode = LOOP;
+    else if(playMode == LOOP)
+      playMode = IN_ORDER;
+    else if(playMode == IN_ORDER)
+      playMode = SHUFFLE;
+    DrawOledInfo();
+    playMode == SHUFFLE ? Serial.println("SHUFFLE ON") : Serial.println("SHUFFLE OFF");
+    buttonLock = true;
+  }
+
   if(loopCount >= nextSongAfterXLoops)
   {
     if(playMode == SHUFFLE)
@@ -510,7 +509,7 @@ void loop()
 
   if(buttonLock)
   {
-    //if(digitalRead(loop_btn) && digitalRead(shuf_btn))
+    if(digitalRead(option_btn))
       buttonLock = false;
   }
 
@@ -673,11 +672,11 @@ void loop()
 }
 void setup()
 {
-    // pinMode(prev_btn, INPUT_PULLUP);
-    // pinMode(rand_btn, INPUT_PULLUP);
-    // pinMode(next_btn, INPUT_PULLUP);
-    // pinMode(loop_btn, INPUT_PULLUP);
-    // pinMode(shuf_btn, INPUT_PULLUP);
+    pinMode(prev_btn, INPUT_PULLUP);
+    pinMode(rand_btn, INPUT_PULLUP);
+    pinMode(next_btn, INPUT_PULLUP);
+    pinMode(option_btn, INPUT_PULLUP);
+
     Wire.begin();
     SPI.begin();
     ymClock.SetFrequency(7670453);
