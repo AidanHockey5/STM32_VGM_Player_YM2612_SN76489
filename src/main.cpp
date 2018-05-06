@@ -16,6 +16,7 @@ SPIRAM ram(PB12);
 
 //OLED
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0);
+bool isOLEDOn = true;
 
 SdFat SD;
 File vgm;
@@ -132,55 +133,46 @@ void RemoveSVI() //Sometimes, Windows likes to place invisible files in our SD c
 
 void DrawOledInfo()
 {
-  u8g2.clearDisplay();
-  u8g2.setFont(u8g2_font_helvR08_te);
-  u8g2.sendBuffer();
-  char *cstr = &trackTitle[0u];
-  u8g2.drawStr(0,10, cstr);
-  cstr = &gameName[0u];
-  u8g2.drawStr(0,20, cstr);
-  cstr = &gameDate[0u];
-  u8g2.drawStr(0,30, cstr);
-  cstr = &systemName[0u];
-  u8g2.drawStr(0,40, cstr);
-  String fileNumberData = "File: " + String(currentFileNumber+1) + "/" + String(numberOfFiles);
-  cstr = &fileNumberData[0u];
-  u8g2.drawStr(0,50, cstr);
-  String loopShuffleStatus;
-  String loopStatus;
-  if(playMode == LOOP)
-    loopStatus = "LOOP ON";
+  if(isOLEDOn)
+  {
+    u8g2.setPowerSave(0);
+    u8g2.clearDisplay();
+    u8g2.setFont(u8g2_font_helvR08_te);
+    u8g2.sendBuffer();
+    char *cstr = &trackTitle[0u];
+    u8g2.drawStr(0,10, cstr);
+    cstr = &gameName[0u];
+    u8g2.drawStr(0,20, cstr);
+    cstr = &gameDate[0u];
+    u8g2.drawStr(0,30, cstr);
+    cstr = &systemName[0u];
+    u8g2.drawStr(0,40, cstr);
+    String fileNumberData = "File: " + String(currentFileNumber+1) + "/" + String(numberOfFiles);
+    cstr = &fileNumberData[0u];
+    u8g2.drawStr(0,50, cstr);
+    String loopShuffleStatus;
+    String loopStatus;
+    if(playMode == LOOP)
+      loopStatus = "LOOP ON";
+    else
+      loopStatus = "LOOP OFF";
+    String shuffleStatus;
+    if(playMode == SHUFFLE)
+      shuffleStatus = "SHFL ON";
+    else
+      shuffleStatus = "SHFL OFF";
+    loopShuffleStatus = loopStatus + " | " + shuffleStatus;
+    cstr = &loopShuffleStatus[0u];
+    u8g2.drawStr(0, 60, cstr);
+    u8g2.sendBuffer();
+  }
   else
-    loopStatus = "LOOP OFF";
-  String shuffleStatus;
-  if(playMode == SHUFFLE)
-    shuffleStatus = "SHFL ON";
-  else
-    shuffleStatus = "SHFL OFF";
-  loopShuffleStatus = loopStatus + " | " + shuffleStatus;
-  cstr = &loopShuffleStatus[0u];
-  u8g2.drawStr(0, 60, cstr);
-  u8g2.sendBuffer();
+  {
+      u8g2.clearDisplay();
+      u8g2.setPowerSave(1);
+      u8g2.sendBuffer();
+  }
 }
-
-// void DrawOLEDInfo()
-// {
-//   u8g2.setFont(u8g2_font_helvR08_tf);
-//   u8g2.clearBuffer();
-//   char *cstr = &trackTitle[0u];
-//   u8g2.drawStr(0,9, cstr);
-//   cstr = &gameName[0u];
-//   u8g2.drawStr(0,22, cstr);
-
-//   u8g2.setFont(u8g2_font_micro_tr);
-//   if(playMode == LOOP)
-//     u8g2.drawStr(0,32, "LOOP");
-//   else if(playMode == SHUFFLE)
-//     u8g2.drawStr(0,32, "SHUFFLE");
-//   else
-//     u8g2.drawStr(0,32, "IN ORDER");
-//   u8g2.sendBuffer();
-// }
 
 void ClearTrackData()
 {
@@ -478,26 +470,42 @@ void loop()
       case '?': //Send back information about the track
         Serial.println(trackTitle);
       break;
+      case '!': //Toggle the OLED
+        isOLEDOn = !isOLEDOn;
+        DrawOledInfo();
+      break;
     }
   }
-  if(!digitalRead(next_btn))
-    StartupSequence(NEXT);
-  if(!digitalRead(prev_btn))
-    StartupSequence(PREVIOUS);
-  if(!digitalRead(rand_btn))
-    StartupSequence(RNG);
+
   if(!digitalRead(option_btn) && !buttonLock)
   {
+    PlayMode currentMode = playMode;
     if(playMode == SHUFFLE)
       playMode = LOOP;
     else if(playMode == LOOP)
       playMode = IN_ORDER;
     else if(playMode == IN_ORDER)
       playMode = SHUFFLE;
+    while(!digitalRead(option_btn)) //Toggle the OLED by first holding the playmode button then hitting the random button.
+    {
+      if(!digitalRead(rand_btn))
+      {
+        isOLEDOn = !isOLEDOn;
+        playMode = currentMode;
+        break;
+      }
+    }
     DrawOledInfo();
-    playMode == SHUFFLE ? Serial.println("SHUFFLE ON") : Serial.println("SHUFFLE OFF");
     buttonLock = true;
   }
+
+  if(!digitalRead(next_btn))
+    StartupSequence(NEXT);
+  if(!digitalRead(prev_btn))
+    StartupSequence(PREVIOUS);
+  if(!digitalRead(rand_btn) && !buttonLock)
+    StartupSequence(RNG);
+
 
   if(loopCount >= nextSongAfterXLoops)
   {
@@ -509,7 +517,7 @@ void loop()
 
   if(buttonLock)
   {
-    if(digitalRead(option_btn))
+    if(digitalRead(option_btn) && digitalRead(rand_btn))
       buttonLock = false;
   }
 
