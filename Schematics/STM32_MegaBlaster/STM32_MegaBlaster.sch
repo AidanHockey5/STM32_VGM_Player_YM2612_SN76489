@@ -2047,7 +2047,7 @@ Wire Wire Line
 	9900 2650 9900 2750
 Connection ~ 9900 2750
 Text Notes 15550 11050 0    50   ~ 0
-4
+4b
 $Comp
 L power:+12V #PWR07
 U 1 1 5B0FFBF2
