@@ -535,6 +535,11 @@ void loop()
   cmd = vgm.read();
   switch(cmd)
   {
+    case 0x4F:
+    sn76489.SendDataPins(0x06);
+    sn76489.SendDataPins(vgm.read());
+    startTime = timeInMicros;
+    pauseTime = singleSampleWait;
     case 0x50:
     sn76489.SendDataPins(vgm.read());
     startTime = timeInMicros;
@@ -591,7 +596,7 @@ void loop()
       //Serial.print("DATA BLOCK 0x67.  PCM Data Size: ");
       vgm.read();
       vgm.read(); //Skip 0x66 and data type
-      pcmBufferPosition = bufferPos;
+      pcmBufferPosition = vgm.curPosition();
       uint32_t PCMdataSize = Read32();
       if(PCMdataSize > MAX_PCM_BUFFER_SIZE)
         StartupSequence(NEXT);
@@ -666,9 +671,9 @@ void loop()
     }
     case 0x66:
       if(loopOffset == 0)
-        loopOffset = 64;
+        loopOffset = 0x40;
       loopCount++;
-      vgm.seek(loopOffset);
+      vgm.seek(loopOffset-0x1C);
       bufferPos = 0;
       break;
       
@@ -691,7 +696,7 @@ void setup()
     snClock.SetFrequency(3579545);
     Serial.begin(9600);
     ym2612.Reset();
-    
+    delay(500);
     u8g2.begin();
     u8g2.setFont(u8g2_font_fub11_tf);
     u8g2.clearBuffer();
