@@ -16,8 +16,8 @@ The YM2612 is a 6-channel FM synthesizer IC that was most prominently featured i
 The YM2612 also had a CMOS alias that is functionally identical named the YM3438.
 The SN76489 is a 3-channel + 1 noise channel programmable sound generator (PSG) that was popular with several early video game systems and home computers.
 Most notably, the SN76489 was featured in the Sega Master system, the predecessor to the Genesis. To allow for backwards compatibility, Sega included a clone of the SN76489 in their new Genesis consoles.
-Programmers and sound designers could leverage the SN76489 to add three more square wave channels to the YM2612's 6-channels of FM synth. Creating 9 channels + 1 noise channels in total.
-While this player was designed with the Genesis in mind, it can play back any VGM files designed for the Master System, FM-Towns PC, C2 machine, or any other machine that used the YM2612 and/or the SN76489.
+Programmers and sound designers could leverage the SN76489 to add three more square wave channels to the YM2612's 6-channels of FM synth, creating 9 channels + 1 noise channels in total.
+While this player was designed with the Genesis in mind, it can play back any VGM files designed for the Master System, FM-Towns PC, C2 machine, or any other machine that used the YM2612/YM3438 and/or the SN76489.
 This project synthesizes music from .VGM files in real time on genuine hardware. There is no emulation here.
 
 VGM stands for Video Game Music, and it is a 44.1KHz logging format that stores real soundchip register information. My player will parse these files and send the data to the appropriate chips. You can learn more about the VGM file format here: http://www.smspower.org/Music/VGMFileFormat
