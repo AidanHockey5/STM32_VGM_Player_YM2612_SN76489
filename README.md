@@ -47,6 +47,6 @@ Once a song request is sent through the serial console, an attempt will be made 
 Need an easy-to-use serial console? [I've made one here.](https://github.com/AidanHockey5/OpenArduinoSerialConsole)
 
 # Schematic
-![Schematic]()
+![Schematic](https://raw.githubusercontent.com/AidanHockey5/STM32_VGM_Player_YM2612_SN76489/master/Schematics/STM32_MegaBlaster/STM32_MegaBlaster.png)
 
-[PDF]()
+[PDF](https://github.com/AidanHockey5/STM32_VGM_Player_YM2612_SN76489/raw/master/Schematics/STM32_MegaBlaster/STM32_MegaBlaster.pdf)
