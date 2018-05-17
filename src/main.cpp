@@ -71,7 +71,7 @@ uint32_t pcmBufferPosition = 0;
 uint32_t loopOffset = 0;
 uint16_t loopCount = 0;
 uint16_t nextSongAfterXLoops = 3;
-uint32_t clockSpeed = 3579545;
+uint32_t rate = 60;
 enum PlayMode {LOOP, PAUSE, SHUFFLE, IN_ORDER};
 PlayMode playMode = SHUFFLE;
 
@@ -187,7 +187,6 @@ void ClearTrackData()
 uint32_t EoFOffset = 0;
 uint32_t VGMVersion = 0;
 uint32_t GD3Offset = 0;
-uint32_t prevClockSpeed = 1;
 void GetHeaderData() //Scrape off the important VGM data from the header, then drop down to the GD3 area for song info data
 {
   Read32(); //V - G - M 0x00->0x03
@@ -260,16 +259,12 @@ void GetHeaderData() //Scrape off the important VGM data from the header, then d
     GD3Position++;
   }
   GD3Position++;
-  Serial.println(trackTitle);
-  Serial.println(gameName);
-  Serial.println(systemName);
-  Serial.println(gameDate);
-  Serial.println("");
-  DrawOledInfo();
   vgm.seek(bufferReturnPosition); //Send the file seek back to the original buffer position so we don't confuse our program.
   waitSamples = Read32(); //0x18->0x1B : Get wait Samples count
   loopOffset = Read32();  //0x1C->0x1F : Get loop offset Postition
-  for(int i = 0; i<5; i++) Read32(); //Skip right to the VGM data offset position;
+  Read32();               //0x20->0x23 : Skip loop samples
+  rate = Read32();        //0x24->0x27 : Get recording rate in Hz
+  for(int i = 0; i<3; i++) Read32(); //Skip right to the VGM data offset position;
   uint32_t vgmDataOffset = Read32();
   if(vgmDataOffset == 0 || vgmDataOffset == 12) //VGM starts at standard 0x40
   {
@@ -279,6 +274,13 @@ void GetHeaderData() //Scrape off the important VGM data from the header, then d
   {
     for(int i = 0; i < vgmDataOffset; i++) vgm.read();  //VGM starts at different data position (Probably VGM spec 1.7+)
   }
+  Serial.println(trackTitle);
+  Serial.println(gameName);
+  Serial.println(systemName);
+  Serial.println(gameDate);
+  Serial.print("Rate: "); Serial.print(rate); Serial.println("Hz");
+  Serial.println("");
+  DrawOledInfo();
 }
 
 enum StartUpProfile {FIRST_START, NEXT, PREVIOUS, RNG, REQUEST};
@@ -429,7 +431,17 @@ void StartupSequence(StartUpProfile sup, String request = "")
         preCalced7nDelays[i] = ((1000.0 / (sampleRate/(float)i+1))*1000);
       }
     }
-    delay(1000);
+    if(rate == 60 || rate == 0)
+    {
+        ymClock.SetFrequency(7670453); //PAL 7600489 //NTSC 7670453
+        snClock.SetFrequency(3579545); //PAL 3546894 //NTSC 3579545 
+    }
+    else
+    {
+        ymClock.SetFrequency(7600489); //PAL 7600489 //NTSC 7670453
+        snClock.SetFrequency(3546894); //PAL 3546894 //NTSC 3579545 
+    }
+    delay(200);
 }
 
 bool buttonLock = false;
@@ -692,8 +704,8 @@ void setup()
 
     Wire.begin();
     SPI.begin();
-    ymClock.SetFrequency(7670453);
-    snClock.SetFrequency(3579545);
+    ymClock.SetFrequency(7670453); //PAL 7600489 //NTSC 7670453
+    snClock.SetFrequency(3579545); //PAL 3546894 //NTSC 3579545 
     Serial.begin(9600);
     ym2612.Reset();
     delay(500);
