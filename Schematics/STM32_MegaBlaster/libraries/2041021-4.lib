@@ -1,0 +1,42 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#(c) SnapEDA 2016 (snapeda.com)
+#This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA) with Design Exception 1.0
+#
+# 2041021-4
+#
+DEF 2041021-4 J 0 40 Y Y 1 L N
+F0 "J" -200 751 50 H V L BNN
+F1 "2041021-4" -201 -902 50 H V L BNN
+F2 "J_SMD_2041021-4-9_2.5_27.90_25_3.3" 0 0 50 H I L BNN
+F3 "2041021-4" 0 0 50 H I L BNN
+F4 "None" 0 0 50 H I L BNN
+F5 "https://www.digikey.com/product-detail/en/te-connectivity-amp-connectors/2041021-4/A101492CT-ND/2571152?WT.z_cid=ref_snapeda&utm_source=snapeda&utm_medium=aggregator&utm_campaign=buynow" 0 0 50 H I L BNN
+F6 "Secure Digital Conn,top,Push-Pull,10 Au" 0 0 50 H I L BNN
+F7 "A101492CT-ND" 0 0 50 H I L BNN
+F8 "TE Connectivity" 0 0 50 H I L BNN
+F9 "2041021-4" 0 0 50 H I L BNN
+DRAW
+P 2 0 0 10 200 700 200 -800 N
+P 2 0 0 10 200 -800 -200 -800 N
+P 2 0 0 10 -200 -800 -200 700 N
+P 2 0 0 10 -200 700 200 700 N
+X 1 1 300 600 100 L 40 40 0 0 P 
+X 2 2 300 500 100 L 40 40 0 0 P 
+X 3 3 300 400 100 L 40 40 0 0 P 
+X 4 4 300 300 100 L 40 40 0 0 P 
+X 5 5 300 200 100 L 40 40 0 0 P 
+X 6 6 300 100 100 L 40 40 0 0 P 
+X 7 7 300 0 100 L 40 40 0 0 P 
+X 8 8 300 -100 100 L 40 40 0 0 P 
+X 9 9 300 -200 100 L 40 40 0 0 P 
+X GND G1 300 -700 100 L 40 40 0 0 W 
+X GND G2 300 -700 100 L 40 40 0 0 W 
+X GND G3 300 -700 100 L 40 40 0 0 W 
+X GND G4 300 -700 100 L 40 40 0 0 W 
+X WRITE WRITE 300 -400 100 L 40 40 0 0 P 
+X CARD CARD 300 -500 100 L 40 40 0 0 P 
+ENDDRAW
+ENDDEF
+#
+# End Library

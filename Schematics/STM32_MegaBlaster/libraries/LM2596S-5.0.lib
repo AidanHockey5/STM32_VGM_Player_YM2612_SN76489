@@ -1,0 +1,32 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#(c) SnapEDA 2016 (snapeda.com)
+#This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA) with Design Exception 1.0
+#
+# LM2596S-5.0
+#
+DEF LM2596S-5.0 U 0 40 Y Y 1 L N
+F0 "U" -181 509 50 H V L BNN
+F1 "LM2596S-5.0" -122 -781 50 H V L BNN
+F2 "TO170P1435X465-6N" 0 0 50 H I L BNN
+F3 "IC REG BUCK 5V 3A TO263-5" 0 0 50 H I L BNN
+F4 "Texas" 0 0 50 H I L BNN
+F5 "TO-263-6 NEC" 0 0 50 H I L BNN
+F6 "Unavailable" 0 0 50 H I L BNN
+F7 "LM2596S-5.0" 0 0 50 H I L BNN
+F8 "None" 0 0 50 H I L BNN
+DRAW
+P 2 0 0 6 -500 400 -500 -600 N
+P 2 0 0 6 -500 -600 500 -600 N
+P 2 0 0 6 500 -600 500 400 N
+P 2 0 0 6 500 400 -500 400 N
+X VIN 1 -700 200 200 R 40 40 0 0 W 
+X FB 4 -700 0 200 R 40 40 0 0 I 
+X ~ON~/OFF 5 -700 -100 200 R 40 40 0 0 I 
+X GND_2 3 -700 -300 200 R 40 40 0 0 P 
+X GND 6 -700 -400 200 R 40 40 0 0 P 
+X OUT 2 700 200 200 L 40 40 0 0 O 
+ENDDRAW
+ENDDEF
+#
+# End Library
