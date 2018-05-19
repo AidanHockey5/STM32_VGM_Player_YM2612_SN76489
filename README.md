@@ -52,3 +52,8 @@ Need an easy-to-use serial console? [I've made one here.](https://github.com/Aid
 [PDF](https://github.com/AidanHockey5/STM32_VGM_Player_YM2612_SN76489/raw/master/Schematics/STM32_MegaBlaster/STM32_MegaBlaster.pdf)
 
 [Bill Of Materials (BOM)](https://github.com/AidanHockey5/STM32_VGM_Player_YM2612_SN76489/tree/master/Schematics/STM32_MegaBlaster/BOM)
+
+# KiCad
+The schematic and PCB of this project was made in a nightly version of KiCad 5. To open these files, please use the most recent nightly builds of KiCad http://kicad-pcb.org/download/
+As of writing this, KiCad's most recent stable version is 4.0.7
+This project was made on 5.0.0 RC2 (dev-493-gd776eaca8)
