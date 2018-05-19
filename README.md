@@ -1,6 +1,7 @@
 # Mega Blaster
 
 See this project in action here: https://www.youtube.com/watch?v=WoAp2-gWaLM
+
 For more information, visit: http://www.aidanlawrence.com/megablaster-hardware-sega-genesis-video-game-music-player/
 
 This project is a hardware Video Game Music (VGM) player that uses a genuine YM2612 synthesizer chip + SN76489AN PSG. 
