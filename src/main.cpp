@@ -690,8 +690,8 @@ void loop()
       break;
       
       default:
-      Serial.print("Defaulted command: "); Serial.println(cmd, HEX);
-      Serial.print("At: "); Serial.println(vgm.position()-1, HEX);
+      // Serial.print("Defaulted command: "); Serial.println(cmd, HEX);
+      // Serial.print("At: "); Serial.println(vgm.position()-1, HEX);
       break;
   } 
 }
@@ -717,7 +717,7 @@ void setup()
     delay(5000);
     Serial.println("INIT GOOD!");
 
-    if(!SD.begin())
+    if(!SD.begin(PA4, SD_SCK_HZ(F_CPU/2)))
     {
         Serial.println("Card Mount Failed");
         u8g2.clearBuffer();

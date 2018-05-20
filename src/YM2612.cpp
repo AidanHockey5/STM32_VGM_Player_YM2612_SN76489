@@ -52,8 +52,8 @@ void YM2612::WriteDataPins(unsigned char data) //Digital I/O
     ((data >> 3)&1) == HIGH ? GPIOC->regs->ODR |= 1 << 14 : GPIOC->regs->ODR &= ~(1 << 14); //PC14
     ((data >> 4)&1) == HIGH ? GPIOC->regs->ODR |= 1 << 15 : GPIOC->regs->ODR &= ~(1 << 15); //PC15
     ((data >> 5)&1) == HIGH ? GPIOA->regs->ODR |= 1 << 0 : GPIOA->regs->ODR &= ~(1 << 0); //PA0
-    ((data >> 6)&1) == HIGH ? GPIOA->regs->ODR |= 1 << 1 : GPIOA->regs->ODR &= ~(1 << 1); //PA0
-    ((data >> 7)&1) == HIGH ? GPIOA->regs->ODR |= 1 << 2 : GPIOA->regs->ODR &= ~(1 << 2); //PA0
+    ((data >> 6)&1) == HIGH ? GPIOA->regs->ODR |= 1 << 1 : GPIOA->regs->ODR &= ~(1 << 1); //PA1
+    ((data >> 7)&1) == HIGH ? GPIOA->regs->ODR |= 1 << 2 : GPIOA->regs->ODR &= ~(1 << 2); //PA2
     // for(int i=0; i<8; i++)
     // {
     //   digitalWrite(*(_dataPins+i), ((data >> i)&1));
