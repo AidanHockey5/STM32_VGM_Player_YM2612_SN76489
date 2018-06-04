@@ -150,19 +150,14 @@ void DrawOledInfo()
     String fileNumberData = "File: " + String(currentFileNumber+1) + "/" + String(numberOfFiles);
     cstr = &fileNumberData[0u];
     u8g2.drawStr(0,50, cstr);
-    String loopShuffleStatus;
-    String loopStatus;
+    String playmodeStatus;
     if(playMode == LOOP)
-      loopStatus = "LOOP ON";
+      playmodeStatus = "LOOP";
+    else if(playMode == SHUFFLE)
+      playmodeStatus = "SHUFFLE";
     else
-      loopStatus = "LOOP OFF";
-    String shuffleStatus;
-    if(playMode == SHUFFLE)
-      shuffleStatus = "SHFL ON";
-    else
-      shuffleStatus = "SHFL OFF";
-    loopShuffleStatus = loopStatus + " | " + shuffleStatus;
-    cstr = &loopShuffleStatus[0u];
+      playmodeStatus = "IN ORDER";
+    cstr = &playmodeStatus[0u];
     u8g2.drawStr(0, 60, cstr);
     u8g2.sendBuffer();
   }
@@ -690,8 +685,8 @@ void loop()
       break;
       
       default:
-      // Serial.print("Defaulted command: "); Serial.println(cmd, HEX);
-      // Serial.print("At: "); Serial.println(vgm.position()-1, HEX);
+      Serial.print("Defaulted command: "); Serial.println(cmd, HEX);
+      Serial.print("At: "); Serial.println(vgm.position()-1, HEX);
       break;
   } 
 }

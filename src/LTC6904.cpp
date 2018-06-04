@@ -11,7 +11,7 @@ LTC6904::LTC6904(bool ADR)
 
 void LTC6904::SetManual(uint16_t oct, uint16_t dac)
 {
-  unsigned char CNF = 0b00000000;
+  unsigned char CNF = 0b00000010;
   uint16_t BitMap = (oct << 12) | (dac << 2) | CNF;
   byte Byte1=(byte)(BitMap >> 8 );
   byte Byte2=(byte)BitMap;
