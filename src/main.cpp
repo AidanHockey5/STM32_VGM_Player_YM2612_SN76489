@@ -703,6 +703,7 @@ void setup()
     snClock.SetFrequency(3579545); //PAL 3546894 //NTSC 3579545 
     Serial.begin(9600);
     ym2612.Reset();
+    sn76489.Reset();
     delay(500);
     u8g2.begin();
     u8g2.setFont(u8g2_font_fub11_tf);
