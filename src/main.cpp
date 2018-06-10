@@ -685,8 +685,8 @@ void loop()
       break;
       
       default:
-      Serial.print("Defaulted command: "); Serial.println(cmd, HEX);
-      Serial.print("At: "); Serial.println(vgm.position()-1, HEX);
+      // Serial.print("Defaulted command: "); Serial.println(cmd, HEX);
+      // Serial.print("At: "); Serial.println(vgm.position()-1, HEX);
       break;
   } 
 }

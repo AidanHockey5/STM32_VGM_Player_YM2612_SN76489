@@ -8,3 +8,6 @@ LCSC can also provide parts at a significantly lower price than Digikey, but the
 
 You can use the Digikey BOM import tool to make this entire process much faster: https://www.digikey.com/BOM
 Or you can sign-in to Digikey and view the parts here: https://www.digikey.com/BOM/View?id=7564225
+
+Also, the 1000uF capacitors (C37, C36, and C34) are actually have 2.5mm pin spacing, but Digikey only had 3.5mm spaced 8mm diameter caps. The fit isn't exactly perfect, but it's close enough to work.
+If you can find 1000uF (16V or higher) capacitors that are 8mm in diameter and have 2.5mm pin spacing, I reccomend that you use those for a better fit. 
