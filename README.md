@@ -55,6 +55,22 @@ Need an easy-to-use serial console? [I've made one here.](https://github.com/Aid
 
 [Bill Of Materials (BOM)](https://github.com/AidanHockey5/STM32_VGM_Player_YM2612_SN76489/tree/master/Schematics/STM32_MegaBlaster/BOM)
 
+# Programming
+I have made a quick video guide on how to program the MegaBlaster. It's pretty simple!
+
+https://youtu.be/sSx3_d5n6gs
+
+1) Set the "Bluepill" left jumper to the '1' position.
+2) Turn on the MegaBlaster
+3) Hit the reset button on the Bluepill board.
+4) Open the source code in Visual Studio Code /w the PlatformIO extension.
+5) Upload the code using the upload button on the bottom ribbon.
+6) Replace the jumper on the Bluepill board to it's original '0' position.
+
+Link to VS Code: https://code.visualstudio.com/
+
+PlatformIO install guide: http://docs.platformio.org/en/latest/ide/vscode.html#installation 
+
 # KiCad
 The schematic and PCB of this project was made in a nightly version of KiCad 5. To open these files, please use the most recent nightly builds of KiCad http://kicad-pcb.org/download/
 As of writing this, KiCad's most recent stable version is 4.0.7
