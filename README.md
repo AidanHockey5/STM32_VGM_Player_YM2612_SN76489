@@ -75,3 +75,26 @@ PlatformIO install guide: http://docs.platformio.org/en/latest/ide/vscode.html#i
 The schematic and PCB of this project was made in a nightly version of KiCad 5. To open these files, please use the most recent nightly builds of KiCad http://kicad-pcb.org/download/
 As of writing this, KiCad's most recent stable version is 4.0.7
 This project was made on 5.0.0 RC2 (dev-493-gd776eaca8)
+
+# YM3438 Support
+After a little tinkering, I've managed to get a YM3438 working as a replacement for the YM2612. For those that don't know, the YM3438 is functionally equivalent to the YM2612, but is made using a CMOS process. The YM3438 is pin-compatible but it is not a drop-in replacement since the output impedance is significantly higher. Fortunately, all you need to do to get a YM3438 to work is mod a couple resistors.
+
+
+Resistor Number | Replace with
+------------ | -------------
+R7 | LEAVE UNPOPULATED
+R8 | LEAVE UNPOPULATED
+R6 | 1.2K
+R9 | 100K
+R10 | 100K
+R27 | 33K
+R30 | 33K
+R28 | 150K
+R29 | 150K
+
+
+WARNING! The final sound output volume will be SIGNIFICANTLY HIGHER with this setup. Be sure to start your YM3438 MegaBlaster at the lowest possible volume before turning on the device and slowly increase the volume to prevent equipment damage and or hearing damage.
+
+Why replace the YM2612 with a YM3438? Well, for one, the YM3438 runs very cool while the YM2612s typically get screaming hot during normal operation. The sound quality is also slightly altered with FM synths typically sounding a little more 'sterile' compared to the YM2612's characteristic grit. PCM sample quality is also significantly improved. Later revisions of the Sega Genesis used an ASIC YM3438 instead of a discrete YM2612, so some users may be more familiar with the likes of the YM3438 than the YM2612. It's all personal preference really.
+
+You can see a YM2612/YM3438 comparison video here: https://www.youtube.com/watch?v=jMHRtriv1wM
