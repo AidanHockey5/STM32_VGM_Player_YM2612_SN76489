@@ -339,8 +339,11 @@ void StartupSequence(StartUpProfile sup, String request = "")
     {
       randomSeed(micros());
       uint16_t randomFile = currentFileNumber;
-      while(randomFile == currentFileNumber)
-        randomFile = random(numberOfFiles-1);
+      if(numberOfFiles > 1)
+      {
+        while(randomFile == currentFileNumber)
+          randomFile = random(numberOfFiles-1);
+      }
       currentFileNumber = randomFile;
       SD.vwd()->rewind();
       nextFile.openNext(SD.vwd(), O_READ);
