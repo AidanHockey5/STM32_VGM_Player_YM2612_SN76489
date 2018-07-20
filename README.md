@@ -56,6 +56,9 @@ Need an easy-to-use serial console? [I've made one here.](https://github.com/Aid
 [Bill Of Materials (BOM)](https://github.com/AidanHockey5/STM32_VGM_Player_YM2612_SN76489/tree/master/Schematics/STM32_MegaBlaster/BOM)
 
 # Programming
+
+Programming must be done through the built-in serial port. YOU CAN NOT USE AN STLINK FOR PROGRAMMING.
+
 I have made a quick video guide on how to program the MegaBlaster. It's pretty simple!
 
 https://youtu.be/sSx3_d5n6gs
@@ -70,6 +73,15 @@ https://youtu.be/sSx3_d5n6gs
 Link to VS Code: https://code.visualstudio.com/
 
 PlatformIO install guide: http://docs.platformio.org/en/latest/ide/vscode.html#installation 
+
+PlatformIO Not finding your serial port? Try opening up your Platformio.ini file and adding the following lines:
+```
+upload_port = COMX
+
+upload_protocol = serial
+```
+
+(Make sure to change 'X' to the number of your COM port that the MegaBlaster is connected to. (I.E. COM4, COM8, COM10, etc.)
 
 # KiCad
 The schematic and PCB of this project was made in a nightly version of KiCad 5. To open these files, please use the most recent nightly builds of KiCad http://kicad-pcb.org/download/
