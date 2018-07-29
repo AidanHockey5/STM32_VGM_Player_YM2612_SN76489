@@ -9,6 +9,15 @@
 #include "SPIRAM.h"
 #include "logo.h"
 
+
+#if defined(__arm__) //Use this to get a rough idea of how much RAM is left
+extern "C" char* sbrk(int incr);
+static int FreeStack() {
+  char top = 't';
+  return &top - reinterpret_cast<char*>(sbrk(0));
+}
+#endif
+
 LTC6904 ymClock(0);
 LTC6904 snClock(1);
 
@@ -45,11 +54,15 @@ SN76489 sn76489(dataBusPins, SN_WE);
 const unsigned int MAX_CMD_BUFFER = 1;
 unsigned char cmdBuffer[MAX_CMD_BUFFER];
 uint32_t bufferPos = 0;
-const unsigned int MAX_FILE_NAME_SIZE = 1024;
+const unsigned int MAX_FILE_NAME_SIZE = 128;
 char fileName[MAX_FILE_NAME_SIZE];
 unsigned char cmd = 0;
 uint16_t numberOfFiles = 0;
 int32_t currentFileNumber = 0;
+const unsigned int MAX_LOCAL_PCM_BUFFER_SIZE = 12000; //Is there less than 7k of PCM sample data? If so, use the faster local RAM
+unsigned char localPCMBuffer[MAX_LOCAL_PCM_BUFFER_SIZE];
+bool usingLocalPCMBuffer = false;
+
 
 //Timing Variables
 float singleSampleWait = 0;
@@ -276,6 +289,7 @@ void GetHeaderData() //Scrape off the important VGM data from the header, then d
   Serial.print("Rate: "); Serial.print(rate); Serial.println("Hz");
   Serial.println("");
   DrawOledInfo();
+
 }
 
 enum StartUpProfile {FIRST_START, NEXT, PREVIOUS, RNG, REQUEST};
@@ -439,6 +453,8 @@ void StartupSequence(StartUpProfile sup, String request = "")
         ymClock.SetFrequency(7600489); //PAL 7600489 //NTSC 7670453
         snClock.SetFrequency(3546894); //PAL 3546894 //NTSC 3579545 
     }
+    usingLocalPCMBuffer = false;
+    //Serial.print("RAM FREE: "); Serial.println(FreeStack());
     delay(200);
 }
 
@@ -447,7 +463,6 @@ void loop()
 {
   while(Serial.available())
   {
-    bool USBorBluetooh = Serial.available();
     char serialCmd = Serial.read();
     switch(serialCmd)
     {
@@ -603,6 +618,7 @@ void loop()
     break;
     case 0x67:
     {
+      //Serial.println("NEW RAM");
       //Serial.print("DATA BLOCK 0x67.  PCM Data Size: ");
       vgm.read();
       vgm.read(); //Skip 0x66 and data type
@@ -610,11 +626,19 @@ void loop()
       uint32_t PCMdataSize = Read32();
       if(PCMdataSize > MAX_PCM_BUFFER_SIZE)
         StartupSequence(NEXT);
+      if(PCMdataSize <= MAX_LOCAL_PCM_BUFFER_SIZE)
+      {
+        usingLocalPCMBuffer = true;
+        Serial.println("LOCAL PCM BUFFER");
+      }
       //Serial.println(PCMdataSize);
 
       for ( uint32_t i = 0; i < PCMdataSize; i++ )
       {
-        ram.WriteByte(i, vgm.read()); 
+        if(!usingLocalPCMBuffer)
+          ram.WriteByte(i, vgm.read()); 
+        else
+          localPCMBuffer[i] = vgm.read();
       }
       //Serial.println("Finished buffering PCM");
       break;
@@ -663,7 +687,11 @@ void loop()
     {
     uint32_t wait = cmd & 0x0F;
     byte address = 0x2A;
-    unsigned char data = ram.ReadByte(pcmBufferPosition++);
+    unsigned char data;
+    if(!usingLocalPCMBuffer)
+      data = ram.ReadByte(pcmBufferPosition++);
+    else
+      data = localPCMBuffer[pcmBufferPosition++];
     ym2612.SendDataPins(address, data, 0);
     //Serial.print("RAM READ: "); 
     //Serial.println(data, HEX);
@@ -691,7 +719,7 @@ void loop()
       // Serial.print("Defaulted command: "); Serial.println(cmd, HEX);
       // Serial.print("At: "); Serial.println(vgm.position()-1, HEX);
       break;
-  } 
+  }   
 }
 void setup()
 {
