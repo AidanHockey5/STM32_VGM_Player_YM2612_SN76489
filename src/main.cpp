@@ -59,7 +59,7 @@ char fileName[MAX_FILE_NAME_SIZE];
 unsigned char cmd = 0;
 uint16_t numberOfFiles = 0;
 int32_t currentFileNumber = 0;
-const unsigned int MAX_LOCAL_PCM_BUFFER_SIZE = 12000; //Is there less than 7k of PCM sample data? If so, use the faster local RAM
+const unsigned int MAX_LOCAL_PCM_BUFFER_SIZE = 12000; //Is there less than 12k of PCM sample data? If so, use the faster local RAM
 unsigned char localPCMBuffer[MAX_LOCAL_PCM_BUFFER_SIZE];
 bool usingLocalPCMBuffer = false;
 
