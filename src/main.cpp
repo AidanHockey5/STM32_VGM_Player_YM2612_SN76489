@@ -79,6 +79,7 @@ unsigned long startTime = 0;
 
 //Song Data Variables
 #define MAX_PCM_BUFFER_SIZE 124000 //In bytes (Size of SPI_RAM)
+#define ENABLE_LOCAL_PCM_BUFFER true
 //uint8_t pcmBuffer[MAX_PCM_BUFFER_SIZE];
 uint32_t pcmBufferPosition = 0;
 uint32_t loopOffset = 0;
@@ -626,7 +627,7 @@ void loop()
       uint32_t PCMdataSize = Read32();
       if(PCMdataSize > MAX_PCM_BUFFER_SIZE)
         StartupSequence(NEXT);
-      if(PCMdataSize <= MAX_LOCAL_PCM_BUFFER_SIZE)
+      if(PCMdataSize <= MAX_LOCAL_PCM_BUFFER_SIZE && ENABLE_LOCAL_PCM_BUFFER)
       {
         usingLocalPCMBuffer = true;
         Serial.println("LOCAL PCM BUFFER");
