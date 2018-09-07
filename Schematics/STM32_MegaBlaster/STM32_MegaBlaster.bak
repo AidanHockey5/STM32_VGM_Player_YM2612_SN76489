@@ -1598,7 +1598,7 @@ F 3 "" H 12600 7450 50  0001 C CNN
 $EndComp
 Connection ~ 12600 7150
 $Comp
-L device:CP1_Small C20
+L Device:C_Small C20
 U 1 1 5AEDFA79
 P 13000 6300
 F 0 "C20" V 13228 6300 50  0000 C CNN
@@ -1611,7 +1611,7 @@ $EndComp
 Wire Wire Line
 	12600 6300 12900 6300
 $Comp
-L device:CP1_Small C21
+L Device:C_Small C21
 U 1 1 5AEE7909
 P 13000 7150
 F 0 "C21" V 13228 7150 50  0000 C CNN

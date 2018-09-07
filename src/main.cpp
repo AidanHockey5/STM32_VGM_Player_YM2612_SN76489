@@ -79,7 +79,7 @@ unsigned long startTime = 0;
 
 //Song Data Variables
 #define MAX_PCM_BUFFER_SIZE 124000 //In bytes (Size of SPI_RAM)
-#define ENABLE_LOCAL_PCM_BUFFER true
+#define ENABLE_LOCAL_PCM_BUFFER false //Allow the device to occasionally store PCM samples in local RAM should they fit?
 //uint8_t pcmBuffer[MAX_PCM_BUFFER_SIZE];
 uint32_t pcmBufferPosition = 0;
 uint32_t loopOffset = 0;

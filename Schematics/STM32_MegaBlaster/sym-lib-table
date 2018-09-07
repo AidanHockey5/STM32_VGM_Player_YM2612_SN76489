@@ -11,4 +11,5 @@
   (lib (name I2C_OLED_Display_1_3)(type Legacy)(uri ${KIPRJMOD}/libraries/I2C_OLED_Display_1_3.lib)(options "")(descr ""))
   (lib (name 1825115Switch)(type Legacy)(uri ${KIPRJMOD}/libraries/1825115Switch.lib)(options "")(descr ""))
   (lib (name 3_5_TRS_Jack)(type Legacy)(uri ${KIPRJMOD}/libraries/3_5_TRS_Jack.lib)(options "")(descr ""))
+  (lib (name STM32_MegaBlaster-rescue)(type Legacy)(uri ${KIPRJMOD}/STM32_MegaBlaster-rescue.lib)(options "")(descr ""))
 )
