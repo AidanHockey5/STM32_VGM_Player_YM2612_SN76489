@@ -55,6 +55,13 @@ Need an easy-to-use serial console? [I've made one here.](https://github.com/Aid
 
 [Bill Of Materials (BOM)](https://github.com/AidanHockey5/STM32_VGM_Player_YM2612_SN76489/tree/master/Schematics/STM32_MegaBlaster/BOM)
 
+# Interactive Assembly Guide
+[You can view the interactive guide here.](https://www.aidanlawrence.com/wp-content/uploads/2018/09/ibom.html)
+
+Courtesy of the stellar KiCAD plugin, [Interactive HTML BOM](https://github.com/openscopeproject/InteractiveHtmlBom)
+
+Use this guide to help you assemble the Mega Blaster. Hover your cursor over the list of parts and this web page will show you where to place each component. I have included the source HTML file under the [Schematic's BOM folder](https://github.com/AidanHockey5/STM32_VGM_Player_YM2612_SN76489/tree/master/Schematics/STM32_MegaBlaster/BOM) for local viewing. 
+
 # Programming
 
 Programming must be done through the built-in serial port. YOU CAN NOT USE AN STLINK FOR PROGRAMMING.
