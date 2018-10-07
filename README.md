@@ -91,9 +91,9 @@ upload_protocol = serial
 (Make sure to change 'X' to the number of your COM port that the MegaBlaster is connected to. (I.E. COM4, COM8, COM10, etc.)
 
 # KiCad
-The schematic and PCB of this project was made in a nightly version of KiCad 5. To open these files, please use the most recent nightly builds of KiCad http://kicad-pcb.org/download/
-As of writing this, KiCad's most recent stable version is 4.0.7
-This project was made on 5.0.0 RC2 (dev-493-gd776eaca8)
+The schematic and PCB of this project was made in a nightly version of KiCad 5, specifically, 5.0.0 RC2 (dev-493-gd776eaca8)
+Since then, the project has been migrated to KiCAD 5 stable.
+Please download the latest stable release of KiCAD 5 here: http://kicad-pcb.org/download/
 
 # YM3438 Support
 After a little tinkering, I've managed to get a YM3438 working as a replacement for the YM2612. For those that don't know, the YM3438 is functionally equivalent to the YM2612, but is made using a CMOS process. The YM3438 is pin-compatible but it is not a drop-in replacement since the output impedance is significantly higher. Fortunately, all you need to do to get a YM3438 to work is mod a couple resistors.
