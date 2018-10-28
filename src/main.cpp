@@ -10,7 +10,6 @@
 #include "logo.h"
 #include "Bus.h"
 
-
 #if defined(__arm__) //Use this to get a rough idea of how much RAM is left
 extern "C" char* sbrk(int incr);
 static int FreeStack() {
@@ -25,8 +24,7 @@ LTC6904 snClock(1);
 SPIRAM ram(PB12);
 
 //OLED
-U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0);
-
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0);
 bool isOLEDOn = true;
 
 SdFat SD;
@@ -48,8 +46,10 @@ const int YM_IRQ = NULL;
 
 const int SN_WE = PB5;
 
-YM2612 ym2612(dataBusPins, YM_CS, YM_RD, YM_WR, YM_A0, YM_A1, YM_IRQ, YM_IC);
-SN76489 sn76489(dataBusPins, SN_WE);
+Bus bus = Bus();
+
+YM2612 ym2612(&bus);
+SN76489 sn76489(&bus);
 //U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0);
 
 //Buffer & file stream
@@ -77,7 +77,7 @@ unsigned long preCalced7nDelays[16];
 unsigned long lastWaitData61 = 0;
 unsigned long cachedWaitTime61 = 0;
 unsigned long pauseTime = 0;
-unsigned long startTime = 0;
+unsigned long startTime = 0;                          
 
 //Song Data Variables
 #define MAX_PCM_BUFFER_SIZE 124000 //In bytes (Size of SPI_RAM)
@@ -739,6 +739,7 @@ void setup()
     ym2612.Reset();
     sn76489.Reset();
     delay(500);
+    
     u8g2.begin();
     u8g2.setFont(u8g2_font_fub11_tf);
     u8g2.clearBuffer();
@@ -767,10 +768,4 @@ void setup()
     countFile.close();
     SD.vwd()->rewind();
     StartupSequence(FIRST_START);
-    Bus b = Bus();
-    while(1)
-    {
-      b.Write(0x00);
-      b.Write(0xFF);
-    }
 }
