@@ -8,6 +8,7 @@
 #include "SN76489.h"
 #include "SPIRAM.h"
 #include "logo.h"
+#include "Bus.h"
 
 
 #if defined(__arm__) //Use this to get a rough idea of how much RAM is left
@@ -24,7 +25,8 @@ LTC6904 snClock(1);
 SPIRAM ram(PB12);
 
 //OLED
-U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0);
+U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0);
+
 bool isOLEDOn = true;
 
 SdFat SD;
@@ -765,4 +767,10 @@ void setup()
     countFile.close();
     SD.vwd()->rewind();
     StartupSequence(FIRST_START);
+    Bus b = Bus();
+    while(1)
+    {
+      b.Write(0x00);
+      b.Write(0xFF);
+    }
 }

@@ -1,6 +1,7 @@
 #ifndef YM2612_H_
 #define YM2612_H_
 #include <Arduino.h>
+#include "Bus.h"
 class YM2612
 {
 private:
