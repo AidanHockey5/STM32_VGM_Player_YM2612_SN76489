@@ -20,6 +20,7 @@ bool topUpBufffer();
 void clearBuffers();
 uint8_t readBuffer();
 uint16_t readBuffer16();
+uint32_t readBuffer32();
 uint16_t parseVGM();
 
 //Clocks
@@ -53,6 +54,10 @@ uint64_t sampleCounter = 0;
 uint32_t bufferPos = 0;
 uint32_t sdBlock = 0;
 uint16_t waitSamples = 0;
+uint32_t totalSamples = 0;
+
+//VGM Variables
+uint32_t loopOffset = 0;
 
 void setup()
 {
@@ -80,7 +85,7 @@ void setup()
   }
   if(file.isOpen())
     file.close();
-  file = SD.open("02 Above Ground", FILE_READ);
+  file = SD.open("36 - Because You're the Number One (Name Entry Ace Ranking)", FILE_READ);
   if(!file)
   {
     Serial.println("File open failed!");
@@ -100,15 +105,18 @@ void setup()
   Timer2.attachCompare1Interrupt(tick);
   Timer2.refresh();
   Timer2.resume();
-  for(int i = 0; i<0x40; i++)
+  for(int i = 0; i<0x17; i++)
     readBuffer();
-  Serial.println("GOOOOOOOOOOOOOOOOO");
+  totalSamples = readBuffer32();
+  loopOffset = readBuffer32();
+  for(int i = 0x20; i < 0x40; i++)
+    readBuffer();
+  Serial.print("LOOP: "); Serial.println(loopOffset, HEX);
 }
 
 //Count at 44.1KHz
 void tick()
 {
-  sampleCounter++;
   if(waitSamples > 0)
     waitSamples--;
 }
@@ -145,6 +153,7 @@ uint8_t readBuffer()
   {
     topUpBufffer();
   }
+  bufferPos++;
   return cmdBuffer.shift();
 }
 
@@ -155,6 +164,18 @@ uint16_t readBuffer16()
   {
     d += ( uint16_t( readBuffer() ) << ( 8 * i ));
   }
+  bufferPos+=2;
+  return d;
+}
+
+uint32_t readBuffer32()
+{
+  uint16_t d;
+  for ( int i = 0; i < 4; i++ )
+  {
+    d += ( uint16_t( readBuffer() ) << ( 8 * i ));
+  }
+  bufferPos+=4;
   return d;
 }
 
@@ -240,10 +261,18 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
       return wait;
     }
     case 0xE0:
+    {}
     //PCMseek
     return 0;
     case 0x66:
-    file.seek(0x40);
+    {
+    clearBuffers();
+    file.seek((168-0x1C)-1);
+    ///////////////////////////////TO DO - FIX LOOP
+
+    topUpBufffer();
+
+    }
     
     return 0;
     default:
@@ -260,5 +289,5 @@ void loop()
     waitSamples += parseVGM();
   }
   else if(waitSamples >= 23) //It takes more or less 23 samples worth of time to read-in 512 bytes from the SD card
-    topUpBufffer();
+    {topUpBufffer();}
 }
