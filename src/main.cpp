@@ -29,6 +29,7 @@ LTC6904 snClock(1);
 
 //RAM
 SPIRAM ram(PB12);
+#define MAX_PCM_BUFFER_SIZE 124000
 
 //OLED
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0);
@@ -52,9 +53,11 @@ uint8_t sdBuffer[512];
 //Counters
 uint64_t sampleCounter = 0;
 uint32_t bufferPos = 0;
+uint32_t cmdPos = 0;
 uint32_t sdBlock = 0;
 uint16_t waitSamples = 0;
 uint32_t totalSamples = 0;
+uint32_t pcmBufferPosition = 0;
 
 //VGM Variables
 uint32_t loopOffset = 0;
@@ -96,6 +99,8 @@ void setup()
 
   //Variables
   sampleCounter = 0;
+  cmdPos = 0;
+  waitSamples = 0;
 
   //44.1KHz tick
   Timer2.pause();
@@ -154,6 +159,7 @@ uint8_t readBuffer()
     topUpBufffer();
   }
   bufferPos++;
+  cmdPos++;
   return cmdBuffer.shift();
 }
 
@@ -165,6 +171,7 @@ uint16_t readBuffer16()
     d += ( uint16_t( readBuffer() ) << ( 8 * i ));
   }
   bufferPos+=2;
+  cmdPos+=2;
   return d;
 }
 
@@ -176,6 +183,7 @@ uint32_t readBuffer32()
     d += ( uint16_t( readBuffer() ) << ( 8 * i ));
   }
   bufferPos+=4;
+  cmdPos+=4;
   return d;
 }
 
@@ -211,14 +219,25 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     return 735;
     case 0x63:
     return 882;
-
-    //PCM 0x67
     case 0x67:
     {
-
+      readBuffer16(); //Discard 0x66 and datatype byte
+      pcmBufferPosition = cmdPos;
+      uint32_t PCMSize = readBuffer32();
+      if(PCMSize > MAX_PCM_BUFFER_SIZE)
+      {
+        while(1)
+        {
+          Serial.println("PCM Size too big!");
+          delay(500);
+        }
+      }
+      for (uint32_t i = 0; i < PCMSize; i++)
+      {
+        ram.WriteByte(i, readBuffer());
+      }
     }
     return 0;
-
     case 0x70:
     case 0x71:
     case 0x72:
@@ -255,18 +274,22 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     case 0x8E:
     case 0x8F:
     {
-      //Do PCM shit here
       uint32_t wait = cmd & 0x0F;
       uint8_t addr = 0x2A;
+      uint8_t data = ram.ReadByte(pcmBufferPosition++);
+      ym2612.SendDataPins(addr, data, 0);
       return wait;
     }
     case 0xE0:
-    {}
+    {
+      pcmBufferPosition = readBuffer32();
+    }
     //PCMseek
     return 0;
     case 0x66:
     {
     clearBuffers();
+    cmdPos = 0;
     file.seek((168-0x1C)-1);
     ///////////////////////////////TO DO - FIX LOOP
 
