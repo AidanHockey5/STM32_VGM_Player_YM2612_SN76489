@@ -309,6 +309,11 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     case 0x8F:
     {
       //Set RAM to read sequentially? Manual SPI clock pulsing will be required. Rewrite RAM driver.
+      //Psudo:
+      //Set seq flag to true in RAM driver
+      //Pass over initial addr to RAM with pcmBufferPosition
+      //Keep itterating pcmBufferPosition to keep track of where I am, but clock SPI SCK (PB13) manually to grab new bytes without setting up SPI stack again
+      //Once non 0x8n command is reached, turn off RAM seq flag. 
       uint32_t wait = cmd & 0x0F;
       uint8_t addr = 0x2A;
       uint8_t data = ram.ReadByte(pcmBufferPosition++);
