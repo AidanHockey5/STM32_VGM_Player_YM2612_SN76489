@@ -30,7 +30,6 @@ void YM2612::SendDataPins(unsigned char addr, unsigned char data, bool setA1) //
     GPIOA->regs->ODR &= ~(0x1000); //_WR LOW
     GPIOA->regs->ODR |= 0x1000;    //_WR HIGH
     GPIOB->regs->ODR |= 0x0808;    //_CS HIGH
-    delay_us(1);
     GPIOA->regs->ODR |= 0x0800;    //_A0 HIGH
     GPIOB->regs->ODR &= ~(0x0808); //_CS LOW
     _bus->Write(data);

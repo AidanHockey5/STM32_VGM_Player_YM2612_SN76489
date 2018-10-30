@@ -11,6 +11,12 @@
 #include "Bus.h"
 #include "CircularBuffer.h"
 
+
+//TEMP DELETE ON FINAL Version
+#define TEST_TRACK "03 - Don't Go Off (Course Select)"
+#define DEBUG_LED PA8
+
+
 //Prototypes
 void setup();
 void loop();
@@ -61,9 +67,15 @@ uint32_t pcmBufferPosition = 0;
 
 //VGM Variables
 uint32_t loopOffset = 0;
+uint32_t vgmOffset = 0;
+uint16_t loopCount = 0;
 
 void setup()
 {
+  //DEBUG
+  pinMode(DEBUG_LED, OUTPUT);
+  digitalWrite(DEBUG_LED, LOW);
+
   //COM
   Wire.begin();
   SPI.begin();
@@ -88,7 +100,7 @@ void setup()
   }
   if(file.isOpen())
     file.close();
-  file = SD.open("36 - Because You're the Number One (Name Entry Ace Ranking)", FILE_READ);
+  file = SD.open(TEST_TRACK, FILE_READ);
   if(!file)
   {
     Serial.println("File open failed!");
@@ -110,12 +122,34 @@ void setup()
   Timer2.attachCompare1Interrupt(tick);
   Timer2.refresh();
   Timer2.resume();
-  for(int i = 0; i<0x17; i++)
-    readBuffer();
-  totalSamples = readBuffer32();
-  loopOffset = readBuffer32();
-  for(int i = 0x20; i < 0x40; i++)
-    readBuffer();
+
+  //VGM Header
+  readBuffer32(); //VGM
+  readBuffer32(); //EoF
+  readBuffer32(); //Version
+  readBuffer32(); //SN Clock
+  readBuffer32(); //YM2413 Clock
+  readBuffer32(); //GD3 Offset
+  totalSamples = readBuffer32(); //Total Samples
+  loopOffset = readBuffer32(); //Loop Offset
+  readBuffer32(); //Loop # Samples
+  readBuffer32(); //Rate
+  readBuffer32(); //SN etc.
+  readBuffer32(); //YM2612 Clock
+  readBuffer32(); //YM2151 Clock
+  vgmOffset = readBuffer32(); //VGM data Offset
+  readBuffer32(); //Sega PCM Clock
+  readBuffer32(); //SPCM Interface
+
+  //Jump to VGM data start
+  if(vgmOffset == 0x00)
+    vgmOffset = 0x40;
+  if(vgmOffset != 0x40)
+  {
+    for(uint32_t i = 0x40; i<vgmOffset; i++)
+      readBuffer();
+  }
+
   Serial.print("LOOP: "); Serial.println(loopOffset, HEX);
 }
 
@@ -166,10 +200,9 @@ uint8_t readBuffer()
 uint16_t readBuffer16()
 {
   uint16_t d;
-  for ( int i = 0; i < 2; i++ )
-  {
-    d += ( uint16_t( readBuffer() ) << ( 8 * i ));
-  }
+  byte v0 = readBuffer();
+  byte v1 = readBuffer();
+  d = uint16_t(v0 + (v1 << 8));
   bufferPos+=2;
   cmdPos+=2;
   return d;
@@ -178,10 +211,11 @@ uint16_t readBuffer16()
 uint32_t readBuffer32()
 {
   uint16_t d;
-  for ( int i = 0; i < 4; i++ )
-  {
-    d += ( uint16_t( readBuffer() ) << ( 8 * i ));
-  }
+  byte v0 = readBuffer();
+  byte v1 = readBuffer();
+  byte v2 = readBuffer();
+  byte v3 = readBuffer();
+  d = uint32_t(v0 + (v1 << 8) + (v2 << 16) + (v3 << 24));
   bufferPos+=4;
   cmdPos+=4;
   return d;
@@ -274,6 +308,7 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     case 0x8E:
     case 0x8F:
     {
+      //Set RAM to read sequentially? Manual SPI clock pulsing will be required. Rewrite RAM driver.
       uint32_t wait = cmd & 0x0F;
       uint8_t addr = 0x2A;
       uint8_t data = ram.ReadByte(pcmBufferPosition++);
@@ -290,11 +325,9 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     {
     clearBuffers();
     cmdPos = 0;
-    file.seek((168-0x1C)-1);
-    ///////////////////////////////TO DO - FIX LOOP
-
+    loopOffset == 0x40 ? file.seek(0x40) : file.seek(loopOffset-0x1C);
     topUpBufffer();
-
+    loopCount++;
     }
     
     return 0;
@@ -305,8 +338,20 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
   return 0;
 }
 
+bool debugOn = false;
 void loop()
 {
+  if(cmdBuffer.isEmpty())
+  {
+    debugOn = true;
+    digitalWrite(DEBUG_LED, HIGH);
+  }
+  else if(debugOn)
+  {
+    debugOn = false;
+    digitalWrite(DEBUG_LED, LOW);
+  }
+    
   if(waitSamples == 0)
   {
     waitSamples += parseVGM();
