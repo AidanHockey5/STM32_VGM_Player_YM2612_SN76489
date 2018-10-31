@@ -13,7 +13,7 @@
 
 
 //TEMP DELETE ON FINAL Version
-#define TEST_TRACK "03 - Don't Go Off (Course Select)"
+#define TEST_TRACK "01 - Title Screen (With Voice)"
 #define DEBUG_LED PA8
 
 
@@ -21,6 +21,8 @@
 void setup();
 void loop();
 void tick();
+void prebufferLoop();
+void injectPrebuffer();
 void fillBuffer();
 bool topUpBufffer(); 
 void clearBuffers();
@@ -36,6 +38,8 @@ LTC6904 snClock(1);
 //RAM
 SPIRAM ram(PB12);
 #define MAX_PCM_BUFFER_SIZE 124000
+uint8_t ramPrefetch = 0x00;
+bool ramPrefetchFlag = false;
 
 //OLED
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0);
@@ -53,8 +57,11 @@ File file;
 
 //Buffers
 #define CMD_BUFFER_SIZE 10240
+#define SD_PREBUF_SIZE 32
+#define LOOP_PREBUF_SIZE 512
 CircularBuffer<uint8_t, CMD_BUFFER_SIZE> cmdBuffer;
-uint8_t sdBuffer[512];
+uint8_t sdBuffer[SD_PREBUF_SIZE];
+uint8_t loopPreBuffer[LOOP_PREBUF_SIZE];
 
 //Counters
 uint64_t sampleCounter = 0;
@@ -140,7 +147,7 @@ void setup()
   vgmOffset = readBuffer32(); //VGM data Offset
   readBuffer32(); //Sega PCM Clock
   readBuffer32(); //SPCM Interface
-
+  //Serial.print("HEADER STACK DONE: "); Serial.println(cmdPos);
   //Jump to VGM data start
   if(vgmOffset == 0x00)
     vgmOffset = 0x40;
@@ -149,8 +156,12 @@ void setup()
     for(uint32_t i = 0x40; i<vgmOffset; i++)
       readBuffer();
   }
+  if(loopOffset == 0x00)
+    loopOffset = vgmOffset;
 
   Serial.print("LOOP: "); Serial.println(loopOffset, HEX);
+  prebufferLoop();
+  ramPrefetch = ram.ReadByte(pcmBufferPosition++);
 }
 
 //Count at 44.1KHz
@@ -158,6 +169,26 @@ void tick()
 {
   if(waitSamples > 0)
     waitSamples--;
+}
+
+//Keep a small cache of commands right at the loop point to prevent excessive SD seeking lag
+void prebufferLoop() 
+{
+  uint32_t prevPos = file.curPosition();
+  file.seek(loopOffset+0x1C);
+  file.read(loopPreBuffer, LOOP_PREBUF_SIZE);
+  file.seek(prevPos);
+}
+
+//On loop, inject the small prebuffer back into the main ring buffer
+void injectPrebuffer()
+{
+  file.seek(loopOffset+0x1C);
+  uint32_t prevPos = file.curPosition();
+  for(int i = 0; i<LOOP_PREBUF_SIZE; i++)
+    cmdBuffer.push(loopPreBuffer[i]);
+  file.seek(prevPos+LOOP_PREBUF_SIZE);
+  cmdPos = LOOP_PREBUF_SIZE-1;
 }
 
 //Completely fill command buffer
@@ -169,10 +200,10 @@ void fillBuffer()
 //Add one 512B section from SD card to buffer. Returns true when buffer is full
 bool topUpBufffer() 
 {
-  if(cmdBuffer.available() < 512)
+  if(cmdBuffer.available() < SD_PREBUF_SIZE)
     return true;
-  file.read(sdBuffer, 512);
-  for(int i = 0; i<512; i++)
+  file.read(sdBuffer, SD_PREBUF_SIZE);
+  for(int i = 0; i<SD_PREBUF_SIZE; i++)
   {
     cmdBuffer.push(sdBuffer[i]);
   }
@@ -210,7 +241,7 @@ uint16_t readBuffer16()
 
 uint32_t readBuffer32()
 {
-  uint16_t d;
+  uint32_t d;
   byte v0 = readBuffer();
   byte v1 = readBuffer();
   byte v2 = readBuffer();
@@ -270,6 +301,7 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
       {
         ram.WriteByte(i, readBuffer());
       }
+      fillBuffer();
     }
     return 0;
     case 0x70:
@@ -308,15 +340,12 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     case 0x8E:
     case 0x8F:
     {
-      //Set RAM to read sequentially? Manual SPI clock pulsing will be required. Rewrite RAM driver.
-      //Psudo:
-      //Set seq flag to true in RAM driver
-      //Pass over initial addr to RAM with pcmBufferPosition
-      //Keep itterating pcmBufferPosition to keep track of where I am, but clock SPI SCK (PB13) manually to grab new bytes without setting up SPI stack again
-      //Once non 0x8n command is reached, turn off RAM seq flag. 
+      //RAM Prefetching? Store the next possbile byte of PCM sample data in a char that will cache itself when there is extra waitSamples
+      ramPrefetchFlag = true;
       uint32_t wait = cmd & 0x0F;
       uint8_t addr = 0x2A;
-      uint8_t data = ram.ReadByte(pcmBufferPosition++);
+      uint8_t data = ramPrefetch;
+      pcmBufferPosition++;
       ym2612.SendDataPins(addr, data, 0);
       return wait;
     }
@@ -330,8 +359,7 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     {
     clearBuffers();
     cmdPos = 0;
-    loopOffset == 0x40 ? file.seek(0x40) : file.seek(loopOffset-0x1C);
-    topUpBufffer();
+    injectPrebuffer();
     loopCount++;
     }
     
@@ -350,6 +378,7 @@ void loop()
   {
     debugOn = true;
     digitalWrite(DEBUG_LED, HIGH);
+    Serial.println("BUFFER EMPTY");
   }
   else if(debugOn)
   {
@@ -361,6 +390,12 @@ void loop()
   {
     waitSamples += parseVGM();
   }
-  else if(waitSamples >= 23) //It takes more or less 23 samples worth of time to read-in 512 bytes from the SD card
-    {topUpBufffer();}
+  else if(waitSamples >= 1) //It takes more or less 23 samples worth of time to read-in 512 bytes from the SD card
+  {
+    topUpBufffer();
+    ramPrefetch = ram.ReadByte(pcmBufferPosition);
+    ramPrefetchFlag = false;
+  }
+  if(ramPrefetchFlag) //Force RAM read even if there isn't enough time.
+    ramPrefetch = ram.ReadByte(pcmBufferPosition);
 }

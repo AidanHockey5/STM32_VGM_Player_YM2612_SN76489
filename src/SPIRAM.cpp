@@ -33,12 +33,13 @@ void SPIRAM::Init()
 unsigned char SPIRAM::ReadByte(uint32_t addr)
 {
     //CS B12
+    unsigned char data;
     GPIOB->regs->ODR &= ~(0b0001000000000000); //LOW
     SPI_2.transfer(0x03);
     SPI_2.transfer((uint8_t)(addr >> 16)); //&0xff
     SPI_2.transfer((uint8_t)(addr >> 8));
     SPI_2.transfer((uint8_t)addr);
-    unsigned char data = SPI_2.transfer(0x00);
+    data = SPI_2.transfer(0x00);
     GPIOB->regs->ODR |= 0b0001000000000000; //HIGH
     return data;
 }
