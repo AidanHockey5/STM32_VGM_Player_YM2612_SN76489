@@ -9,23 +9,28 @@
 #include "SPIRAM.h"
 #include "logo.h"
 #include "Bus.h"
+#include "TrackStructs.h"
 #include "CircularBuffer.h"
 
 
 //TEMP DELETE ON FINAL Version
-#define TEST_TRACK "01 - Title Screen (With Voice)"
 #define DEBUG_LED PA8
 
 
 //Prototypes
 void setup();
 void loop();
+void handleSerialIn();
 void tick();
+void removeSVI();
 void prebufferLoop();
 void injectPrebuffer();
 void fillBuffer();
 bool topUpBufffer(); 
 void clearBuffers();
+void handleButtons();
+bool startTrack(FileStrategy fileStrategy, String request = "");
+bool vgmVerify();
 uint8_t readBuffer();
 uint16_t readBuffer16();
 uint32_t readBuffer32();
@@ -47,13 +52,23 @@ U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0);
 //Data Bus
 Bus bus = Bus();
 
+//Buttons
+const int prev_btn = PB11;
+const int rand_btn = PB10;
+const int next_btn = PB1;
+const int option_btn = PA3;
+
 //Sound Chips
 YM2612 ym2612(&bus);
 SN76489 sn76489(&bus);
 
-//SD
+//SD & File Streaming
 SdFat SD;
 File file;
+#define MAX_FILE_NAME_SIZE 128
+char fileName[MAX_FILE_NAME_SIZE];
+uint32_t numberOfFiles = 0;
+uint32_t currentFileNumber = 0;
 
 //Buffers
 #define CMD_BUFFER_SIZE 10240
@@ -64,7 +79,7 @@ uint8_t sdBuffer[SD_PREBUF_SIZE];
 uint8_t loopPreBuffer[LOOP_PREBUF_SIZE];
 
 //Counters
-uint64_t sampleCounter = 0;
+uint32_t tickCounter = 0;
 uint32_t bufferPos = 0;
 uint32_t cmdPos = 0;
 uint32_t sdBlock = 0;
@@ -73,15 +88,23 @@ uint32_t totalSamples = 0;
 uint32_t pcmBufferPosition = 0;
 
 //VGM Variables
-uint32_t loopOffset = 0;
-uint32_t vgmOffset = 0;
 uint16_t loopCount = 0;
+uint16_t maxLoops = 3;
+VGMHeader header;
+PlayMode playMode = SHUFFLE;
 
 void setup()
 {
   //DEBUG
   pinMode(DEBUG_LED, OUTPUT);
   digitalWrite(DEBUG_LED, LOW);
+
+  //Buttons
+  pinMode(prev_btn, INPUT_PULLUP);
+  pinMode(rand_btn, INPUT_PULLUP);
+  pinMode(next_btn, INPUT_PULLUP);
+  pinMode(option_btn, INPUT_PULLUP);
+
 
   //COM
   Wire.begin();
@@ -105,21 +128,17 @@ void setup()
   {
     Serial.println("SD Mount Failed!");
   }
-  if(file.isOpen())
-    file.close();
-  file = SD.open(TEST_TRACK, FILE_READ);
-  if(!file)
-  {
-    Serial.println("File open failed!");
-    while(1){};
-  }
-  clearBuffers();
-  fillBuffer();
 
-  //Variables
-  sampleCounter = 0;
-  cmdPos = 0;
-  waitSamples = 0;
+  removeSVI();
+
+  File countFile;
+  while ( countFile.openNext( SD.vwd(), O_READ ))
+  {
+    countFile.close();
+    numberOfFiles++;
+  }
+  countFile.close();
+  SD.vwd()->rewind();
 
   //44.1KHz tick
   Timer2.pause();
@@ -130,38 +149,8 @@ void setup()
   Timer2.refresh();
   Timer2.resume();
 
-  //VGM Header
-  readBuffer32(); //VGM
-  readBuffer32(); //EoF
-  readBuffer32(); //Version
-  readBuffer32(); //SN Clock
-  readBuffer32(); //YM2413 Clock
-  readBuffer32(); //GD3 Offset
-  totalSamples = readBuffer32(); //Total Samples
-  loopOffset = readBuffer32(); //Loop Offset
-  readBuffer32(); //Loop # Samples
-  readBuffer32(); //Rate
-  readBuffer32(); //SN etc.
-  readBuffer32(); //YM2612 Clock
-  readBuffer32(); //YM2151 Clock
-  vgmOffset = readBuffer32(); //VGM data Offset
-  readBuffer32(); //Sega PCM Clock
-  readBuffer32(); //SPCM Interface
-  //Serial.print("HEADER STACK DONE: "); Serial.println(cmdPos);
-  //Jump to VGM data start
-  if(vgmOffset == 0x00)
-    vgmOffset = 0x40;
-  if(vgmOffset != 0x40)
-  {
-    for(uint32_t i = 0x40; i<vgmOffset; i++)
-      readBuffer();
-  }
-  if(loopOffset == 0x00)
-    loopOffset = vgmOffset;
-
-  Serial.print("LOOP: "); Serial.println(loopOffset, HEX);
-  prebufferLoop();
-  ramPrefetch = ram.ReadByte(pcmBufferPosition++);
+  startTrack(FIRST_START);
+  vgmVerify();
 }
 
 //Count at 44.1KHz
@@ -169,13 +158,204 @@ void tick()
 {
   if(waitSamples > 0)
     waitSamples--;
+  tickCounter++;
+}
+
+//Mount file and prepare for playback. Returns true if file is found.
+bool startTrack(FileStrategy fileStrategy, String request)
+{
+  File nextFile;
+  memset(fileName, 0x00, MAX_FILE_NAME_SIZE);
+
+  switch(fileStrategy)
+  {
+    case FIRST_START:
+    {
+      nextFile.openNext(SD.vwd(), O_READ);
+      nextFile.getName(fileName, MAX_FILE_NAME_SIZE);
+      nextFile.close();
+      currentFileNumber = 0;
+    }
+    break;
+    case NEXT:
+    {
+      if(currentFileNumber+1 >= numberOfFiles)
+      {
+          SD.vwd()->rewind();
+          currentFileNumber = 0;
+      }
+      else
+          currentFileNumber++;
+      nextFile.openNext(SD.vwd(), O_READ);
+      nextFile.getName(fileName, MAX_FILE_NAME_SIZE);
+      nextFile.close();
+    }
+    break;
+    case PREV:
+    {
+      if(currentFileNumber != 0)
+      {
+        currentFileNumber--;
+        SD.vwd()->rewind();
+        for(uint32_t i = 0; i<=currentFileNumber; i++)
+        {
+          nextFile.close();
+          nextFile.openNext(SD.vwd(), O_READ);
+        }
+        nextFile.getName(fileName, MAX_FILE_NAME_SIZE);
+        nextFile.close();
+      }
+      else
+      {
+        currentFileNumber = numberOfFiles-1;
+        SD.vwd()->rewind();
+        for(uint32_t i = 0; i<=currentFileNumber; i++)
+        {
+          nextFile.close();
+          nextFile.openNext(SD.vwd(), O_READ);
+        }
+        nextFile.getName(fileName, MAX_FILE_NAME_SIZE);
+        nextFile.close();
+      }
+    }
+    break;
+    case RND:
+    {
+      randomSeed(micros());
+      uint32_t randomFile = currentFileNumber;
+      if(numberOfFiles > 1)
+      {
+        while(randomFile == currentFileNumber)
+          randomFile = random(numberOfFiles-1);
+      }
+      currentFileNumber = randomFile;
+      SD.vwd()->rewind();
+      nextFile.openNext(SD.vwd(), O_READ);
+      {
+        for(uint32_t i = 0; i<randomFile; i++)
+        {
+          nextFile.close();
+          nextFile.openNext(SD.vwd(), O_READ);
+        }
+      }
+      nextFile.getName(fileName, MAX_FILE_NAME_SIZE);
+      nextFile.close();
+    }
+    break;
+    case REQUEST:
+    {
+      SD.vwd()->rewind();
+      bool fileFound = false;
+      Serial.print("REQUEST: ");Serial.println(request);
+      for(uint32_t i = 0; i<numberOfFiles; i++)
+      {
+        nextFile.close();
+        nextFile.openNext(SD.vwd(), O_READ);
+        nextFile.getName(fileName, MAX_FILE_NAME_SIZE);
+        String tmpFN = String(fileName);
+        tmpFN.trim();
+        request.trim();
+        if(tmpFN == request)
+        {
+          currentFileNumber = i;
+          fileFound = true;
+          break;
+        }
+      }
+      nextFile.close();
+      if(fileFound)
+      {
+        Serial.println("File found!");
+      }
+      else
+      {
+        Serial.println("ERROR: File not found! Continuing with current song.");
+        return false;
+      }
+    }
+    break;
+  }
+
+  tickCounter = 0;
+  cmdPos = 0;
+  waitSamples = 0;
+  loopCount = 0;
+
+  if(file.isOpen())
+    file.close();
+  file = SD.open(fileName, FILE_READ);
+  if(!file)
+    Serial.println("Failed to read file");
+
+  clearBuffers();
+  fillBuffer();
+
+  //VGM Header
+  header.indent = readBuffer32(); //VGM
+  header.EoF = readBuffer32(); //EoF
+  header.version = readBuffer32(); //Version
+  header.sn76489Clock = readBuffer32(); //SN Clock
+  header.ym2413Clock = readBuffer32(); //YM2413 Clock
+  header.gd3Offset = readBuffer32(); //GD3 Offset
+  header.totalSamples = readBuffer32(); //Total Samples
+  header.loopOffset = readBuffer32(); //Loop Offset
+  header.loopNumSamples = readBuffer32(); //Loop # Samples
+  header.rate = readBuffer32(); //Rate
+  header.snX = readBuffer32(); //SN etc.
+  header.ym2612Clock = readBuffer32(); //YM2612 Clock
+  header.ym2151Clock = readBuffer32(); //YM2151 Clock
+  header.vgmDataOffset = readBuffer32(); //VGM data Offset
+  header.segaPCMClock = readBuffer32(); //Sega PCM Clock
+  header.spcmInterface = readBuffer32(); //SPCM Interface
+
+  //Jump to VGM data start
+  if(header.vgmDataOffset == 0x00)
+    header.vgmDataOffset = 0x40;
+  if(header.vgmDataOffset != 0x40)
+  {
+    for(uint32_t i = 0x40; i<header.vgmDataOffset; i++)
+      readBuffer();
+  }
+  if(header.loopOffset == 0x00)
+    header.loopOffset = header.vgmDataOffset;
+
+  prebufferLoop();
+  ramPrefetch = ram.ReadByte(pcmBufferPosition++);
+  return true;
+}
+
+bool vgmVerify()
+{
+  if(header.indent != 0x206D6756) //VGM. Indent check
+  {
+    startTrack(NEXT);
+    return false;
+  }
+  Serial.println("VGM OK!");
+  return true;
+}
+
+void removeSVI() //Sometimes, Windows likes to place invisible files in our SD card without asking... GTFO!
+{
+  File nextFile;
+  nextFile.openNext(SD.vwd(), O_READ);
+  char name[MAX_FILE_NAME_SIZE];
+  nextFile.getName(name, MAX_FILE_NAME_SIZE);
+  String n = String(name);
+  if(n == "System Volume Information")
+  {
+      if(!nextFile.rmRfStar())
+        Serial.println("Failed to remove SVI file");
+  }
+  SD.vwd()->rewind();
+  nextFile.close();
 }
 
 //Keep a small cache of commands right at the loop point to prevent excessive SD seeking lag
 void prebufferLoop() 
 {
   uint32_t prevPos = file.curPosition();
-  file.seek(loopOffset+0x1C);
+  file.seek(header.loopOffset+0x1C);
   file.read(loopPreBuffer, LOOP_PREBUF_SIZE);
   file.seek(prevPos);
 }
@@ -183,7 +363,7 @@ void prebufferLoop()
 //On loop, inject the small prebuffer back into the main ring buffer
 void injectPrebuffer()
 {
-  file.seek(loopOffset+0x1C);
+  file.seek(header.loopOffset+0x1C);
   uint32_t prevPos = file.curPosition();
   for(int i = 0; i<LOOP_PREBUF_SIZE; i++)
     cmdBuffer.push(loopPreBuffer[i]);
@@ -291,11 +471,8 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
       uint32_t PCMSize = readBuffer32();
       if(PCMSize > MAX_PCM_BUFFER_SIZE)
       {
-        while(1)
-        {
-          Serial.println("PCM Size too big!");
-          delay(500);
-        }
+        startTrack(NEXT);
+        Serial.println("PCM Size too big!");
       }
       for (uint32_t i = 0; i < PCMSize; i++)
       {
@@ -371,21 +548,97 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
   return 0;
 }
 
-bool debugOn = false;
-void loop()
+void handleSerialIn()
 {
-  if(cmdBuffer.isEmpty())
+  bool newTrack = false;
+  while(Serial.available())
   {
-    debugOn = true;
-    digitalWrite(DEBUG_LED, HIGH);
-    Serial.println("BUFFER EMPTY");
+    char serialCmd = Serial.read();
+    switch(serialCmd)
+    {
+      case '+':
+        newTrack = startTrack(NEXT);
+      break;
+      case '-':
+        newTrack = startTrack(PREV);
+      break;
+      case '*':
+        newTrack = startTrack(RND);
+      break;
+      case '/':
+        playMode = SHUFFLE;
+      break;
+      case '.':
+        playMode = LOOP;
+      break;
+      case '?':
+        //Request song info
+      break;
+      case '!':
+        //Toggle OLED
+      break;
+      case 'r':
+      {
+        String req = Serial.readString();
+        req.remove(0, 1); //Remove colon character
+        newTrack = startTrack(REQUEST, req);
+      }
+      break;
+      default:
+        continue;
+    }
   }
-  else if(debugOn)
+  if(newTrack)
+    vgmVerify();
+}
+
+bool buttonLock = false;
+void handleButtons()
+{
+  bool newTrack = false;
+  bool togglePlaymode = false;
+  uint32_t count = 0;
+  if(!digitalRead(next_btn))
+    startTrack(NEXT);
+  if(!digitalRead(prev_btn))
+    startTrack(PREV);
+  if(!digitalRead(rand_btn))
+    startTrack(RND);
+  if(!digitalRead(option_btn))
+    togglePlaymode = true;
+  else
+    buttonLock = false;
+  while(!digitalRead(option_btn))
   {
-    debugOn = false;
-    digitalWrite(DEBUG_LED, LOW);
+    if(count >= 100) //CPU clock speed. Roughly 1 second delay
+    {
+      //toggle OLED after one second of holding OPTION button
+      togglePlaymode = false;
+      buttonLock = true;
+
+      break;
+    } 
+    delay(10);
+    count++;
   }
-    
+  if(buttonLock)
+    togglePlaymode = false;
+  if(newTrack)
+    vgmVerify();
+  if(togglePlaymode)
+  {
+    togglePlaymode = false;
+    if(playMode == SHUFFLE)
+      playMode = LOOP;
+    else if(playMode == LOOP)
+      playMode = IN_ORDER;
+    else if(playMode == IN_ORDER)
+      playMode = SHUFFLE;
+  }
+}
+
+void loop()
+{    
   if(waitSamples == 0)
   {
     waitSamples += parseVGM();
@@ -398,4 +651,14 @@ void loop()
   }
   if(ramPrefetchFlag) //Force RAM read even if there isn't enough time.
     ramPrefetch = ram.ReadByte(pcmBufferPosition);
+  if(loopCount >= maxLoops && playMode != LOOP)
+  {
+    if(playMode == SHUFFLE)
+      startTrack(RND);
+    if(playMode == IN_ORDER)
+      startTrack(NEXT);
+  }
+  if(Serial.available() > 0)
+    handleSerialIn();
+  handleButtons();
 }
