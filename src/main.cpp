@@ -15,6 +15,9 @@
 
 //TEMP DELETE ON FINAL Version
 #define DEBUG_LED PA8
+bool fetching = false;
+bool ready = false;
+bool samplePlaying = false;
 
 
 //Prototypes
@@ -106,7 +109,6 @@ void setup()
   pinMode(next_btn, INPUT_PULLUP);
   pinMode(option_btn, INPUT_PULLUP);
 
-
   //COM
   Wire.begin();
   SPI.begin();
@@ -158,9 +160,18 @@ void setup()
 //Count at 44.1KHz
 void tick()
 {
+  if(!ready)
+    return;
   if(waitSamples > 0)
     waitSamples--;
   tickCounter++;
+  if(waitSamples == 0 && !samplePlaying)
+  {
+    samplePlaying = true;
+    waitSamples += parseVGM();
+    samplePlaying = false;
+    return;
+  }
 }
 
 void prepareChips()
@@ -177,6 +188,7 @@ void prepareChips()
 //Mount file and prepare for playback. Returns true if file is found.
 bool startTrack(FileStrategy fileStrategy, String request)
 {
+  ready = false;
   File nextFile;
   memset(fileName, 0x00, MAX_FILE_NAME_SIZE);
 
@@ -283,6 +295,7 @@ bool startTrack(FileStrategy fileStrategy, String request)
       else
       {
         Serial.println("ERROR: File not found! Continuing with current song.");
+        ready = true;
         return false;
       }
     }
@@ -345,6 +358,8 @@ bool vgmVerify()
     return false;
   }
   Serial.println("VGM OK!");
+  ready = true;
+  //Good place to check for GD3
   return true;
 }
 
@@ -395,12 +410,14 @@ bool topUpBufffer()
 {
   if(cmdBuffer.available() < SD_PREBUF_SIZE)
     return true;
-  file.read(sdBuffer, SD_PREBUF_SIZE);
+  fetching = true;
+  file.readBytes(sdBuffer, SD_PREBUF_SIZE);
   for(int i = 0; i<SD_PREBUF_SIZE; i++)
   {
     cmdBuffer.push(sdBuffer[i]);
   }
   bufferPos = 0;
+  fetching = false;
   return false;
 }
 
@@ -614,12 +631,13 @@ void handleButtons()
   bool newTrack = false;
   bool togglePlaymode = false;
   uint32_t count = 0;
+  
   if(!digitalRead(next_btn))
-    startTrack(NEXT);
+    newTrack = startTrack(NEXT);
   if(!digitalRead(prev_btn))
-    startTrack(PREV);
+    newTrack = startTrack(PREV);
   if(!digitalRead(rand_btn))
-    startTrack(RND);
+    newTrack = startTrack(RND);
   if(!digitalRead(option_btn))
     togglePlaymode = true;
   else
@@ -643,6 +661,7 @@ void handleButtons()
   {
     vgmVerify();
     prepareChips();
+    delay(100);
   }
   if(togglePlaymode)
   {
@@ -658,24 +677,27 @@ void handleButtons()
 
 void loop()
 {    
-  if(waitSamples == 0)
-  {
-    waitSamples += parseVGM();
-  }
-  else if(waitSamples >= 1) //It takes more or less 23 samples worth of time to read-in 512 bytes from the SD card
+  if(!samplePlaying) //It takes more or less 23 samples worth of time to read-in 512 bytes from the SD card
   {
     topUpBufffer();
-    ramPrefetch = ram.ReadByte(pcmBufferPosition);
+    if(ramPrefetchFlag)
+      ramPrefetch = ram.ReadByte(pcmBufferPosition);
     ramPrefetchFlag = false;
   }
   if(ramPrefetchFlag) //Force RAM read even if there isn't enough time.
     ramPrefetch = ram.ReadByte(pcmBufferPosition);
   if(loopCount >= maxLoops && playMode != LOOP)
   {
+    bool newTrack = false;
     if(playMode == SHUFFLE)
-      startTrack(RND);
+      newTrack = startTrack(RND);
     if(playMode == IN_ORDER)
-      startTrack(NEXT);
+      newTrack = startTrack(NEXT);
+    if(newTrack)
+    {
+      vgmVerify();
+      prepareChips();
+    }
   }
   if(Serial.available() > 0)
     handleSerialIn();
