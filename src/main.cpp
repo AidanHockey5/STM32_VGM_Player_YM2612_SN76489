@@ -29,6 +29,7 @@ void fillBuffer();
 bool topUpBufffer(); 
 void clearBuffers();
 void handleButtons();
+void prepareChips();
 bool startTrack(FileStrategy fileStrategy, String request = "");
 bool vgmVerify();
 uint8_t readBuffer();
@@ -151,6 +152,7 @@ void setup()
 
   startTrack(FIRST_START);
   vgmVerify();
+  prepareChips();
 }
 
 //Count at 44.1KHz
@@ -159,6 +161,17 @@ void tick()
   if(waitSamples > 0)
     waitSamples--;
   tickCounter++;
+}
+
+void prepareChips()
+{
+  //Clocks
+  ymClock.SetFrequency(header.ym2612Clock); //PAL 7600489 //NTSC 7670453
+  snClock.SetFrequency(header.sn76489Clock); //PAL 3546894 //NTSC 3579545 
+
+  //Chip reset
+  ym2612.Reset();
+  sn76489.Reset();
 }
 
 //Mount file and prepare for playback. Returns true if file is found.
@@ -589,7 +602,10 @@ void handleSerialIn()
     }
   }
   if(newTrack)
+  {
     vgmVerify();
+    prepareChips();
+  }
 }
 
 bool buttonLock = false;
@@ -624,7 +640,10 @@ void handleButtons()
   if(buttonLock)
     togglePlaymode = false;
   if(newTrack)
+  {
     vgmVerify();
+    prepareChips();
+  }
   if(togglePlaymode)
   {
     togglePlaymode = false;
