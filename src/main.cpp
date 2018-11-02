@@ -11,10 +11,12 @@
 #include "Bus.h"
 #include "TrackStructs.h"
 #include "CircularBuffer.h"
-
+#define CIRCULAR_BUFFER_INT_SAFE
 
 //TEMP DELETE ON FINAL Version
 #define DEBUG_LED PA8
+bool commandFailed = false;
+uint8_t failedCmd = 0x00;
 
 
 
@@ -307,6 +309,7 @@ bool startTrack(FileStrategy fileStrategy, String request)
 
   tickCounter = 0;
   cmdPos = 0;
+  bufferPos = 0;
   waitSamples = 0;
   loopCount = 0;
 
@@ -342,12 +345,13 @@ bool startTrack(FileStrategy fileStrategy, String request)
     header.vgmDataOffset = 0x40;
   if(header.vgmDataOffset != 0x40)
   {
-    for(uint32_t i = 0x40; i<header.vgmDataOffset; i++)
+    for(uint32_t i = 0x40; i<header.vgmDataOffset+0x34; i++)
       readBuffer();
   }
   if(header.loopOffset == 0x00)
     header.loopOffset = header.vgmDataOffset;
 
+  Serial.println(header.loopOffset-0x1C);
   prebufferLoop();
   ramPrefetch = ram.ReadByte(pcmBufferPosition++);
   return true;
@@ -366,6 +370,7 @@ bool vgmVerify()
   Serial.println(gd3.enTrackName);
   Serial.println(gd3.enSystemName);
   Serial.println(gd3.releaseDate);
+  Serial.print("Version: "); Serial.println(header.version, HEX);
   ready = true;
   return true;
 }
@@ -474,7 +479,7 @@ void fillBuffer()
   while(!topUpBufffer()){};
 }
 
-//Add one 512B section from SD card to buffer. Returns true when buffer is full
+//Add to buffer from SD card. Returns true when buffer is full
 bool topUpBufffer() 
 {
   if(cmdBuffer.available() < SD_PREBUF_SIZE)
@@ -633,13 +638,17 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     return 0;
     case 0x66:
     {
+    ready = false;
     clearBuffers();
     cmdPos = 0;
     injectPrebuffer();
     loopCount++;
+    ready = true;
     }
     return 0;
     default:
+    commandFailed = true;
+    failedCmd = cmd;
     return 0;
   }
   return 0;
@@ -769,4 +778,9 @@ void loop()
   if(Serial.available() > 0)
     handleSerialIn();
   handleButtons();
+  if(commandFailed)
+  {
+    commandFailed = false;
+    Serial.print("CMD ERROR: "); Serial.println(failedCmd, HEX);
+  }
 }
