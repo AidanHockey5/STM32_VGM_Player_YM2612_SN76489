@@ -320,6 +320,7 @@ bool startTrack(FileStrategy fileStrategy, String request)
     Serial.println("Failed to read file");
 
   clearBuffers();
+  memset(loopPreBuffer, 0, LOOP_PREBUF_SIZE);
   fillBuffer();
 
   //VGM Header
@@ -341,14 +342,15 @@ bool startTrack(FileStrategy fileStrategy, String request)
   header.spcmInterface = readBuffer32(); //SPCM Interface
 
   //Jump to VGM data start
-  if(header.vgmDataOffset == 0x00)
+  if(header.vgmDataOffset == 0x00 || header.vgmDataOffset == UINT32_MAX || header.vgmDataOffset < 0x40)
     header.vgmDataOffset = 0x40;
+  
   if(header.vgmDataOffset != 0x40)
   {
     for(uint32_t i = 0x40; i<header.vgmDataOffset+0x34; i++)
       readBuffer();
   }
-  if(header.loopOffset == 0x00)
+  if(header.loopOffset == 0x00 || header.loopOffset == UINT32_MAX || header.loopOffset < 0x40)
     header.loopOffset = header.vgmDataOffset;
 
   Serial.println(header.loopOffset-0x1C);
@@ -457,7 +459,7 @@ void removeSVI() //Sometimes, Windows likes to place invisible files in our SD c
 void prebufferLoop() 
 {
   uint32_t prevPos = file.curPosition();
-  file.seek(header.loopOffset+0x1C);
+  file.seek(header.loopOffset == 0x40 ? 0x40 : header.loopOffset+0x1C);
   file.read(loopPreBuffer, LOOP_PREBUF_SIZE);
   file.seek(prevPos);
 }
@@ -465,7 +467,7 @@ void prebufferLoop()
 //On loop, inject the small prebuffer back into the main ring buffer
 void injectPrebuffer()
 {
-  file.seek(header.loopOffset+0x1C);
+  file.seek(header.loopOffset == 0x40 ? 0x40 : header.loopOffset+0x1C);
   uint32_t prevPos = file.curPosition();
   for(int i = 0; i<LOOP_PREBUF_SIZE; i++)
     cmdBuffer.push(loopPreBuffer[i]);
@@ -483,6 +485,8 @@ void fillBuffer()
 bool topUpBufffer() 
 {
   if(cmdBuffer.available() < SD_PREBUF_SIZE)
+    return true;
+  if(cmdBuffer.size() >= file.size())
     return true;
   fetching = true;
   file.readBytes(sdBuffer, SD_PREBUF_SIZE);
