@@ -1,4 +1,5 @@
 #include <stdint.h>
+
 struct VGMHeader
 {
     uint32_t indent;
@@ -21,7 +22,21 @@ struct VGMHeader
 
 struct GD3
 {
-
+    uint32_t size;
+    String enTrackName;
+    String enGameName;
+    String enSystemName;
+    String enAuthor;
+    String releaseDate;
+    void Reset()
+    {
+        size = 0;
+        enTrackName = "";
+        enGameName = "";
+        enSystemName = "";
+        enAuthor = "";
+        releaseDate = "";
+    }
 };
 
 enum FileStrategy {FIRST_START, NEXT, PREV, RND, REQUEST};

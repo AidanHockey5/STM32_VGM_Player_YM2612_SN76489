@@ -15,9 +15,7 @@
 
 //TEMP DELETE ON FINAL Version
 #define DEBUG_LED PA8
-bool fetching = false;
-bool ready = false;
-bool samplePlaying = false;
+
 
 
 //Prototypes
@@ -33,6 +31,7 @@ bool topUpBufffer();
 void clearBuffers();
 void handleButtons();
 void prepareChips();
+void readGD3();
 bool startTrack(FileStrategy fileStrategy, String request = "");
 bool vgmVerify();
 uint8_t readBuffer();
@@ -94,7 +93,11 @@ uint32_t pcmBufferPosition = 0;
 //VGM Variables
 uint16_t loopCount = 0;
 uint16_t maxLoops = 3;
+bool fetching = false;
+bool ready = false;
+bool samplePlaying = false;
 VGMHeader header;
+GD3 gd3;
 PlayMode playMode = SHUFFLE;
 
 void setup()
@@ -112,7 +115,7 @@ void setup()
   //COM
   Wire.begin();
   SPI.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   //Clocks
   ymClock.SetFrequency(7670453); //PAL 7600489 //NTSC 7670453
@@ -358,9 +361,75 @@ bool vgmVerify()
     return false;
   }
   Serial.println("VGM OK!");
+  readGD3();
+  Serial.println(gd3.enGameName);
+  Serial.println(gd3.enTrackName);
+  Serial.println(gd3.enSystemName);
+  Serial.println(gd3.releaseDate);
   ready = true;
-  //Good place to check for GD3
   return true;
+}
+
+void readGD3()
+{
+  uint32_t prevLocation = file.curPosition();
+  uint32_t tag = 0;
+  gd3.Reset();
+  file.seek(0);
+  file.seek(header.gd3Offset+0x14);
+  for(int i = 0; i<4; i++) {tag += uint32_t(file.read());} //Get GD3 tag bytes and add them up for an easy comparison.
+  if(tag != 0xFE) //GD3 tag bytes do not sum up to the constant. No valid GD3 data detected. 
+  {Serial.print("INVALID GD3 SUM:"); Serial.println(tag); file.seek(prevLocation); return;}
+  for(int i = 0; i<4; i++) {file.read();} //Skip version info
+  uint8_t v[4];
+  file.readBytes(v,4);
+  gd3.size = uint32_t(v[0] + (v[1] << 8) + (v[2] << 16) + (v[3] << 24));
+  char a, b;
+  uint8_t itemIndex = 0;
+  for(uint32_t i = 0; i<gd3.size; i++)
+  {
+    a = file.read();
+    b = file.read();
+    if(a+b == 0) //Double 0 detected
+    {
+      itemIndex++;
+      continue;
+    }
+    switch(itemIndex)
+    {
+      case 0:
+      gd3.enTrackName += a;
+      break;
+      case 1:
+      //JP TRACK NAME
+      break;
+      case 2:
+      gd3.enGameName += a;
+      break;
+      case 3:
+      //JP GAME NAME
+      break;
+      case 4:
+      gd3.enSystemName += a;
+      break;
+      case 5:
+      //JP SYSTEM NAME
+      break;
+      case 6:
+      gd3.enAuthor += a;
+      break;
+      case 7:
+      //JP AUTHOR
+      break;
+      case 8:
+      gd3.releaseDate += a;
+      break;
+      default:
+      //IGNORE CONVERTER NAME + NOTES
+      break;
+    }
+  }
+  file.seek(prevLocation);
 }
 
 void removeSVI() //Sometimes, Windows likes to place invisible files in our SD card without asking... GTFO!
@@ -569,10 +638,8 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     injectPrebuffer();
     loopCount++;
     }
-    
     return 0;
     default:
-
     return 0;
   }
   return 0;
