@@ -13,12 +13,11 @@
 #include "CircularBuffer.h"
 #define CIRCULAR_BUFFER_INT_SAFE
 
-//TEMP DELETE ON FINAL Version
+//Debug variabless
+#define DEBUG true //Set this to true for a detailed printout of the header data & any errored commnand bytes
 #define DEBUG_LED PA8
 bool commandFailed = false;
 uint8_t failedCmd = 0x00;
-
-
 
 //Prototypes
 void setup();
@@ -84,7 +83,6 @@ uint8_t sdBuffer[SD_PREBUF_SIZE];
 uint8_t loopPreBuffer[LOOP_PREBUF_SIZE];
 
 //Counters
-uint32_t tickCounter = 0;
 uint32_t bufferPos = 0;
 uint32_t cmdPos = 0;
 uint32_t sdBlock = 0;
@@ -96,7 +94,7 @@ uint32_t pcmBufferPosition = 0;
 uint16_t loopCount = 0;
 uint16_t maxLoops = 3;
 bool fetching = false;
-bool ready = false;
+volatile bool ready = false;
 bool samplePlaying = false;
 VGMHeader header;
 GD3 gd3;
@@ -160,23 +158,6 @@ void setup()
   startTrack(FIRST_START);
   vgmVerify();
   prepareChips();
-}
-
-//Count at 44.1KHz
-void tick()
-{
-  if(!ready)
-    return;
-  if(waitSamples > 0)
-    waitSamples--;
-  tickCounter++;
-  if(waitSamples == 0 && !samplePlaying)
-  {
-    samplePlaying = true;
-    waitSamples += parseVGM();
-    samplePlaying = false;
-    return;
-  }
 }
 
 void prepareChips()
@@ -307,7 +288,6 @@ bool startTrack(FileStrategy fileStrategy, String request)
     break;
   }
 
-  tickCounter = 0;
   cmdPos = 0;
   bufferPos = 0;
   waitSamples = 0;
@@ -320,7 +300,7 @@ bool startTrack(FileStrategy fileStrategy, String request)
     Serial.println("Failed to read file");
 
   clearBuffers();
-  memset(loopPreBuffer, 0, LOOP_PREBUF_SIZE);
+  memset(&loopPreBuffer, 0, LOOP_PREBUF_SIZE);
   fillBuffer();
 
   //VGM Header
@@ -341,19 +321,40 @@ bool startTrack(FileStrategy fileStrategy, String request)
   header.segaPCMClock = readBuffer32(); //Sega PCM Clock
   header.spcmInterface = readBuffer32(); //SPCM Interface
 
-  //Jump to VGM data start
-  if(header.vgmDataOffset == 0x00 || header.vgmDataOffset == UINT32_MAX || header.vgmDataOffset < 0x40)
+  #if DEBUG
+  Serial.print("INDENT: 0x"); Serial.println(header.indent, HEX);
+  Serial.print("EoF: 0x"); Serial.println(header.EoF, HEX);
+  Serial.print("Version: 0x"); Serial.println(header.version, HEX);
+  Serial.print("SN Clock: "); Serial.println(header.sn76489Clock);
+  Serial.print("YM2413 Clock: "); Serial.println(header.ym2413Clock);
+  Serial.print("GD3 Offset: 0x"); Serial.println(header.gd3Offset, HEX);
+  Serial.print("Total Samples: "); Serial.println(header.totalSamples);
+  Serial.print("Loop Offset: 0x"); Serial.println(header.loopOffset, HEX);
+  Serial.print("Loop # Samples: "); Serial.println(header.loopNumSamples);
+  Serial.print("Rate: "); Serial.println(header.rate);
+  Serial.print("SN etc.: 0x"); Serial.println(header.snX, HEX);
+  Serial.print("YM2612 Clock: "); Serial.println(header.ym2612Clock);
+  Serial.print("YM2151 Clock: "); Serial.println(header.ym2151Clock);
+  Serial.print("VGM data Offset: 0x"); Serial.println(header.vgmDataOffset, HEX);
+  Serial.print("SPCM Interface: 0x"); Serial.println(header.spcmInterface, HEX);
+  #endif
+
+  //Jump to VGM data start and compute loop location
+  if(header.vgmDataOffset == 0x0C)
     header.vgmDataOffset = 0x40;
+  else
+    header.vgmDataOffset += 0x34;
   
   if(header.vgmDataOffset != 0x40)
   {
-    for(uint32_t i = 0x40; i<header.vgmDataOffset+0x34; i++)
+    for(uint32_t i = 0x40; i<header.vgmDataOffset; i++)
       readBuffer();
   }
-  if(header.loopOffset == 0x00 || header.loopOffset == UINT32_MAX || header.loopOffset < 0x40)
+  if(header.loopOffset == 0x00)
     header.loopOffset = header.vgmDataOffset;
+  else
+    header.loopOffset = header.loopOffset+0x1C;
 
-  Serial.println(header.loopOffset-0x1C);
   prebufferLoop();
   ramPrefetch = ram.ReadByte(pcmBufferPosition++);
   return true;
@@ -386,7 +387,7 @@ void readGD3()
   file.seek(header.gd3Offset+0x14);
   for(int i = 0; i<4; i++) {tag += uint32_t(file.read());} //Get GD3 tag bytes and add them up for an easy comparison.
   if(tag != 0xFE) //GD3 tag bytes do not sum up to the constant. No valid GD3 data detected. 
-  {Serial.print("INVALID GD3 SUM:"); Serial.println(tag); file.seek(prevLocation); return;}
+  {Serial.print("INVALID GD3 SUM:"); Serial.println(tag); file.seekSet(prevLocation); return;}
   for(int i = 0; i<4; i++) {file.read();} //Skip version info
   uint8_t v[4];
   file.readBytes(v,4);
@@ -436,7 +437,7 @@ void readGD3()
       break;
     }
   }
-  file.seek(prevLocation);
+  file.seekSet(prevLocation);
 }
 
 void removeSVI() //Sometimes, Windows likes to place invisible files in our SD card without asking... GTFO!
@@ -459,19 +460,22 @@ void removeSVI() //Sometimes, Windows likes to place invisible files in our SD c
 void prebufferLoop() 
 {
   uint32_t prevPos = file.curPosition();
-  file.seek(header.loopOffset == 0x40 ? 0x40 : header.loopOffset+0x1C);
+  file.seekSet(header.loopOffset);
   file.read(loopPreBuffer, LOOP_PREBUF_SIZE);
-  file.seek(prevPos);
+  file.seekSet(prevPos);
+  #if DEBUG
+  Serial.print("FIRST LOOP BYTE: "); Serial.println(loopPreBuffer[0], HEX);
+  #endif
 }
 
 //On loop, inject the small prebuffer back into the main ring buffer
 void injectPrebuffer()
 {
-  file.seek(header.loopOffset == 0x40 ? 0x40 : header.loopOffset+0x1C);
+  file.seekSet(header.loopOffset);
   uint32_t prevPos = file.curPosition();
   for(int i = 0; i<LOOP_PREBUF_SIZE; i++)
     cmdBuffer.push(loopPreBuffer[i]);
-  file.seek(prevPos+LOOP_PREBUF_SIZE);
+  file.seekSet(prevPos+LOOP_PREBUF_SIZE);
   cmdPos = LOOP_PREBUF_SIZE-1;
 }
 
@@ -484,7 +488,7 @@ void fillBuffer()
 //Add to buffer from SD card. Returns true when buffer is full
 bool topUpBufffer() 
 {
-  if(cmdBuffer.available() < SD_PREBUF_SIZE)
+  if(cmdBuffer.available()-1 < SD_PREBUF_SIZE)
     return true;
   if(cmdBuffer.size() >= file.size())
     return true;
@@ -540,7 +544,24 @@ uint32_t readBuffer32()
   return d;
 }
 
-uint16_t parseVGM() //Execute next VGM command set. Return back wait time in samples
+//Count at 44.1KHz
+void tick()
+{
+  if(!ready)
+    return;
+  if(waitSamples > 0)
+    waitSamples--;
+  if(waitSamples == 0 && !samplePlaying)
+  {
+    samplePlaying = true;
+    waitSamples += parseVGM();
+    samplePlaying = false;
+    return;
+  }
+}
+
+//Execute next VGM command set. Return back wait time in samples
+uint16_t parseVGM() 
 {
   uint8_t cmd = readBuffer();
   switch(cmd)
@@ -625,7 +646,7 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
     case 0x8E:
     case 0x8F:
     {
-      //RAM Prefetching? Store the next possbile byte of PCM sample data in a char that will cache itself when there is extra waitSamples
+      //RAM Prefetching. Store the next byte of PCM sample data in a char that will cache itself between samples
       ramPrefetchFlag = true;
       uint32_t wait = cmd & 0x0F;
       uint8_t addr = 0x2A;
@@ -658,6 +679,7 @@ uint16_t parseVGM() //Execute next VGM command set. Return back wait time in sam
   return 0;
 }
 
+//Poll the serial port
 void handleSerialIn()
 {
   bool newTrack = false;
@@ -705,6 +727,7 @@ void handleSerialIn()
   }
 }
 
+//Check for button input
 bool buttonLock = false;
 void handleButtons()
 {
@@ -782,7 +805,7 @@ void loop()
   if(Serial.available() > 0)
     handleSerialIn();
   handleButtons();
-  if(commandFailed)
+  if(commandFailed && DEBUG)
   {
     commandFailed = false;
     Serial.print("CMD ERROR: "); Serial.println(failedCmd, HEX);
