@@ -14,7 +14,7 @@
 //#define CIRCULAR_BUFFER_INT_SAFE
 
 //Debug variabless
-#define DEBUG true //Set this to true for a detailed printout of the header data & any errored commnand bytes
+#define DEBUG false //Set this to true for a detailed printout of the header data & any errored commnand bytes
 #define DEBUG_LED PA8
 bool commandFailed = false;
 uint8_t failedCmd = 0x00;
@@ -485,8 +485,10 @@ void injectPrebuffer()
   for(int i = 0; i<LOOP_PREBUF_SIZE; i++)
     cmdBuffer.push_back(loopPreBuffer[i]);
   file.seekSet(header.loopOffset+LOOP_PREBUF_SIZE);
-  Serial.println(file.curPosition());
   cmdPos = LOOP_PREBUF_SIZE-1;
+  #if DEBUG
+  Serial.println(file.curPosition());
+  #endif
 }
 
 //Completely fill command buffer
@@ -563,7 +565,7 @@ uint32_t readSD32()
 //Count at 44.1KHz
 void tick()
 {
-  if(!ready)
+  if(!ready || cmdBuffer.empty())
     return;
   if(waitSamples > 0)
     waitSamples--;
@@ -797,8 +799,10 @@ void loop()
 {    
   topUpBufffer();
   if(ramPrefetchFlag)
+  {
     ramPrefetch = ram.ReadByte(pcmBufferPosition);
-  ramPrefetchFlag = false;
+    ramPrefetchFlag = false;
+  }
   if(loopCount >= maxLoops && playMode != LOOP)
   {
     bool newTrack = false;
