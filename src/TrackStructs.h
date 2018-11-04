@@ -18,6 +18,25 @@ struct VGMHeader
     uint32_t vgmDataOffset;
     uint32_t segaPCMClock;
     uint32_t spcmInterface;
+    void Reset()
+    {
+        indent = 0;
+        EoF = 0;
+        version = 0;
+        sn76489Clock = 0;
+        ym2413Clock = 0;
+        gd3Offset = 0;
+        totalSamples = 0;
+        loopOffset = 0;
+        loopNumSamples = 0;
+        rate = 0;
+        snX = 0;
+        ym2612Clock = 0;
+        ym2151Clock = 0;
+        vgmDataOffset = 0;
+        segaPCMClock = 0;
+        spcmInterface = 0;
+    }
 };
 
 struct GD3

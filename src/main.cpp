@@ -10,8 +10,8 @@
 #include "logo.h"
 #include "Bus.h"
 #include "TrackStructs.h"
-#include "CircularBuffer.h"
-#define CIRCULAR_BUFFER_INT_SAFE
+#include "ringbuffer.h"
+//#define CIRCULAR_BUFFER_INT_SAFE
 
 //Debug variabless
 #define DEBUG true //Set this to true for a detailed printout of the header data & any errored commnand bytes
@@ -38,6 +38,7 @@ bool vgmVerify();
 uint8_t readBuffer();
 uint16_t readBuffer16();
 uint32_t readBuffer32();
+uint32_t readSD32();
 uint16_t parseVGM();
 
 //Clocks
@@ -75,11 +76,10 @@ uint32_t numberOfFiles = 0;
 uint32_t currentFileNumber = 0;
 
 //Buffers
-#define CMD_BUFFER_SIZE 10240
-#define SD_PREBUF_SIZE 32
+#define CMD_BUFFER_SIZE 8192
 #define LOOP_PREBUF_SIZE 512
-CircularBuffer<uint8_t, CMD_BUFFER_SIZE> cmdBuffer;
-uint8_t sdBuffer[SD_PREBUF_SIZE];
+typedef ringbuffer_t<uint8_t, CMD_BUFFER_SIZE, uint8_t> RingBuffer;
+static RingBuffer cmdBuffer;
 uint8_t loopPreBuffer[LOOP_PREBUF_SIZE];
 
 //Counters
@@ -301,6 +301,7 @@ bool startTrack(FileStrategy fileStrategy, String request)
 
   clearBuffers();
   memset(&loopPreBuffer, 0, LOOP_PREBUF_SIZE);
+  header.Reset();
   fillBuffer();
 
   //VGM Header
@@ -322,7 +323,7 @@ bool startTrack(FileStrategy fileStrategy, String request)
   header.spcmInterface = readBuffer32(); //SPCM Interface
 
   #if DEBUG
-  Serial.print("INDENT: 0x"); Serial.println(header.indent, HEX);
+  Serial.print("Indent: 0x"); Serial.println(header.indent, HEX);
   Serial.print("EoF: 0x"); Serial.println(header.EoF, HEX);
   Serial.print("Version: 0x"); Serial.println(header.version, HEX);
   Serial.print("SN Clock: "); Serial.println(header.sn76489Clock);
@@ -351,11 +352,21 @@ bool startTrack(FileStrategy fileStrategy, String request)
       readBuffer();
   }
   if(header.loopOffset == 0x00)
+  {
     header.loopOffset = header.vgmDataOffset;
+  }
   else
-    header.loopOffset = header.loopOffset+0x1C;
+    header.loopOffset += 0x1C;
 
   prebufferLoop();
+  #if DEBUG
+  for(int i = 0; i<LOOP_PREBUF_SIZE; i++)
+  {
+    if(i % 32 == 0)
+      Serial.println();
+    Serial.print("0x"); Serial.print(loopPreBuffer[i], HEX); Serial.print(", ");
+  }
+  #endif
   ramPrefetch = ram.ReadByte(pcmBufferPosition++);
   return true;
 }
@@ -461,7 +472,7 @@ void prebufferLoop()
 {
   uint32_t prevPos = file.curPosition();
   file.seekSet(header.loopOffset);
-  file.read(loopPreBuffer, LOOP_PREBUF_SIZE);
+  file.readBytes(loopPreBuffer, LOOP_PREBUF_SIZE);
   file.seekSet(prevPos);
   #if DEBUG
   Serial.print("FIRST LOOP BYTE: "); Serial.println(loopPreBuffer[0], HEX);
@@ -471,11 +482,10 @@ void prebufferLoop()
 //On loop, inject the small prebuffer back into the main ring buffer
 void injectPrebuffer()
 {
-  file.seekSet(header.loopOffset);
-  uint32_t prevPos = file.curPosition();
   for(int i = 0; i<LOOP_PREBUF_SIZE; i++)
-    cmdBuffer.push(loopPreBuffer[i]);
-  file.seekSet(prevPos+LOOP_PREBUF_SIZE);
+    cmdBuffer.push_back(loopPreBuffer[i]);
+  file.seekSet(header.loopOffset+LOOP_PREBUF_SIZE);
+  Serial.println(file.curPosition());
   cmdPos = LOOP_PREBUF_SIZE-1;
 }
 
@@ -488,16 +498,12 @@ void fillBuffer()
 //Add to buffer from SD card. Returns true when buffer is full
 bool topUpBufffer() 
 {
-  if(cmdBuffer.available()-1 < SD_PREBUF_SIZE)
+  if(cmdBuffer.full())
     return true;
-  if(cmdBuffer.size() >= file.size())
-    return true;
+  if(cmdBuffer.available() >= file.size()) 
+     return true;
   fetching = true;
-  file.readBytes(sdBuffer, SD_PREBUF_SIZE);
-  for(int i = 0; i<SD_PREBUF_SIZE; i++)
-  {
-    cmdBuffer.push(sdBuffer[i]);
-  }
+  cmdBuffer.push_back_nc(file.read());
   bufferPos = 0;
   fetching = false;
   return false;
@@ -511,13 +517,13 @@ void clearBuffers()
 
 uint8_t readBuffer()
 {
-  if(cmdBuffer.isEmpty()) //Buffer exauhsted prematurely. Force replenish
+  if(cmdBuffer.empty()) //Buffer exauhsted prematurely. Force replenish
   {
     topUpBufffer();
   }
   bufferPos++;
   cmdPos++;
-  return cmdBuffer.shift();
+  return cmdBuffer.pop_front_nc();
 }
 
 uint16_t readBuffer16()
@@ -541,6 +547,16 @@ uint32_t readBuffer32()
   d = uint32_t(v0 + (v1 << 8) + (v2 << 16) + (v3 << 24));
   bufferPos+=4;
   cmdPos+=4;
+  return d;
+}
+
+//Read 32 bits right off of the SD card.
+uint32_t readSD32()
+{
+  uint32_t d;
+  byte v[4];
+  file.readBytes(v, 4);
+  d = uint32_t(v[0] + (v[1] << 8) + (v[2] << 16) + (v[3] << 24));
   return d;
 }
 
@@ -752,7 +768,6 @@ void handleButtons()
       //toggle OLED after one second of holding OPTION button
       togglePlaymode = false;
       buttonLock = true;
-
       break;
     } 
     delay(10);
@@ -780,15 +795,10 @@ void handleButtons()
 
 void loop()
 {    
-  if(!samplePlaying) //It takes more or less 23 samples worth of time to read-in 512 bytes from the SD card
-  {
-    topUpBufffer();
-    if(ramPrefetchFlag)
-      ramPrefetch = ram.ReadByte(pcmBufferPosition);
-    ramPrefetchFlag = false;
-  }
-  if(ramPrefetchFlag) //Force RAM read even if there isn't enough time.
+  topUpBufffer();
+  if(ramPrefetchFlag)
     ramPrefetch = ram.ReadByte(pcmBufferPosition);
+  ramPrefetchFlag = false;
   if(loopCount >= maxLoops && playMode != LOOP)
   {
     bool newTrack = false;
