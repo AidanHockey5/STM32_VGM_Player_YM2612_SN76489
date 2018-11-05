@@ -11,7 +11,6 @@
 #include "Bus.h"
 #include "TrackStructs.h"
 #include "ringbuffer.h"
-//#define CIRCULAR_BUFFER_INT_SAFE
 
 //Debug variabless
 #define DEBUG false //Set this to true for a detailed printout of the header data & any errored commnand bytes
@@ -33,6 +32,8 @@ void clearBuffers();
 void handleButtons();
 void prepareChips();
 void readGD3();
+void setISR();
+void drawOLEDTrackInfo();
 bool startTrack(FileStrategy fileStrategy, String request = "");
 bool vgmVerify();
 uint8_t readBuffer();
@@ -52,7 +53,8 @@ uint8_t ramPrefetch = 0x00;
 bool ramPrefetchFlag = false;
 
 //OLED
-U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0);
+U8G2_SH1106_128X64_NONAME_F_HW_I2C oled(U8G2_R0);
+bool isOledOn = true;
 
 //Data Bus
 Bus bus = Bus();
@@ -85,14 +87,12 @@ uint8_t loopPreBuffer[LOOP_PREBUF_SIZE];
 //Counters
 uint32_t bufferPos = 0;
 uint32_t cmdPos = 0;
-uint32_t sdBlock = 0;
 uint16_t waitSamples = 0;
-uint32_t totalSamples = 0;
 uint32_t pcmBufferPosition = 0;
 
 //VGM Variables
 uint16_t loopCount = 0;
-uint16_t maxLoops = 3;
+uint8_t maxLoops = 3;
 bool fetching = false;
 volatile bool ready = false;
 bool samplePlaying = false;
@@ -133,8 +133,22 @@ void setup()
   if(!SD.begin(PA4, SD_SCK_HZ(F_CPU/2)))
   {
     Serial.println("SD Mount Failed!");
+    oled.clearBuffer();
+    oled.drawStr(0,16,"SD Mount");
+    oled.drawStr(0,32,"failed!");
+    oled.sendBuffer();
+    while(true){}
   }
 
+  //OLED
+  oled.begin();
+  oled.setFont(u8g2_font_fub11_tf);
+  oled.drawXBM(0,0, logo_width, logo_height, logo);
+  oled.sendBuffer();
+  delay(3000);
+  oled.clearDisplay();
+
+  //Prepare files
   removeSVI();
 
   File countFile;
@@ -147,17 +161,63 @@ void setup()
   SD.vwd()->rewind();
 
   //44.1KHz tick
+  setISR();
+
+  //Begin
+  startTrack(FIRST_START);
+  vgmVerify();
+  prepareChips();
+}
+
+void setISR()
+{
   Timer2.pause();
   Timer2.setPrescaleFactor(1);
   Timer2.setOverflow(1633);
   Timer2.setChannel1Mode(TIMER_OUTPUT_COMPARE);
   Timer2.attachCompare1Interrupt(tick);
   Timer2.refresh();
-  Timer2.resume();
+  Timer2.resume();  
+}
 
-  startTrack(FIRST_START);
-  vgmVerify();
-  prepareChips();
+void drawOLEDTrackInfo()
+{
+  ready = false;
+  if(isOledOn)
+  {
+    oled.setPowerSave(0);
+    oled.clearDisplay();
+    oled.setFont(u8g2_font_helvR08_te);
+    oled.sendBuffer();
+    char *cstr = &gd3.enTrackName[0u];
+    oled.drawStr(0,10, cstr);
+    cstr = &gd3.enGameName[0u];
+    oled.drawStr(0,20, cstr);
+    cstr = &gd3.releaseDate[0u];
+    oled.drawStr(0,30, cstr);
+    cstr = &gd3.enSystemName[0u];
+    oled.drawStr(0,40, cstr);
+    String fileNumberData = "File: " + String(currentFileNumber+1) + "/" + String(numberOfFiles);
+    cstr = &fileNumberData[0u];
+    oled.drawStr(0,50, cstr);
+    String playmodeStatus;
+    if(playMode == LOOP)
+      playmodeStatus = "LOOP";
+    else if(playMode == SHUFFLE)
+      playmodeStatus = "SHUFFLE";
+    else
+      playmodeStatus = "IN ORDER";
+    cstr = &playmodeStatus[0u];
+    oled.drawStr(0, 60, cstr);
+    oled.sendBuffer();
+  }
+  else
+  {
+    oled.clearDisplay();
+    oled.setPowerSave(1);
+    oled.sendBuffer();
+  }
+  ready = true;
 }
 
 void prepareChips()
@@ -380,6 +440,7 @@ bool vgmVerify()
   }
   Serial.println("VGM OK!");
   readGD3();
+  drawOLEDTrackInfo();
   Serial.println(gd3.enGameName);
   Serial.println(gd3.enTrackName);
   Serial.println(gd3.enSystemName);
@@ -725,7 +786,8 @@ void handleSerialIn()
         //Request song info
       break;
       case '!':
-        //Toggle OLED
+        isOledOn = !isOledOn;
+        drawOLEDTrackInfo();
       break;
       case 'r':
       {
@@ -765,9 +827,11 @@ void handleButtons()
     buttonLock = false;
   while(!digitalRead(option_btn))
   {
-    if(count >= 100) //CPU clock speed. Roughly 1 second delay
+    if(count >= 100) 
     {
       //toggle OLED after one second of holding OPTION button
+      isOledOn = !isOledOn;
+      drawOLEDTrackInfo();
       togglePlaymode = false;
       buttonLock = true;
       break;
@@ -792,6 +856,7 @@ void handleButtons()
       playMode = IN_ORDER;
     else if(playMode == IN_ORDER)
       playMode = SHUFFLE;
+    drawOLEDTrackInfo();
   }
 }
 
@@ -819,9 +884,11 @@ void loop()
   if(Serial.available() > 0)
     handleSerialIn();
   handleButtons();
-  if(commandFailed && DEBUG)
+  #if DEBUG
+  if(commandFailed)
   {
     commandFailed = false;
     Serial.print("CMD ERROR: "); Serial.println(failedCmd, HEX);
   }
+  #endif
 }
