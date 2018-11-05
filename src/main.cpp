@@ -12,7 +12,7 @@
 #include "TrackStructs.h"
 #include "ringbuffer.h"
 
-//Debug variabless
+//Debug variables
 #define DEBUG false //Set this to true for a detailed printout of the header data & any errored commnand bytes
 #define DEBUG_LED PA8
 bool commandFailed = false;
@@ -420,6 +420,7 @@ bool startTrack(FileStrategy fileStrategy, String request)
 
   prebufferLoop();
   #if DEBUG
+  //Dump the contents of the prebuffer
   for(int i = 0; i<LOOP_PREBUF_SIZE; i++)
   {
     if(i % 32 == 0)
@@ -778,12 +779,18 @@ void handleSerialIn()
       break;
       case '/':
         playMode = SHUFFLE;
+        drawOLEDTrackInfo();
       break;
       case '.':
         playMode = LOOP;
+        drawOLEDTrackInfo();
       break;
       case '?':
-        //Request song info
+        Serial.println(gd3.enGameName);
+        Serial.println(gd3.enTrackName);
+        Serial.println(gd3.enSystemName);
+        Serial.println(gd3.releaseDate);
+        Serial.print("Version: "); Serial.println(header.version, HEX);
       break;
       case '!':
         isOledOn = !isOledOn;
