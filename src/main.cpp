@@ -127,7 +127,6 @@ void setup()
 
   //RAM
   ram.Init();
-  while(!Serial){};
 
   //SD
   if(!SD.begin(PA4, SD_SCK_HZ(F_CPU/2)))
