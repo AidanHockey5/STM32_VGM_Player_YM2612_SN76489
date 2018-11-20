@@ -4,4 +4,4 @@
 1x - U1 - STM32 Bluepill Board - https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20180518120532&SearchText=STM32F103C8T6
 1x - U2 - SN76489AN - https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20180518120553&SearchText=SN76489
 1x - U3 - YM2612 - https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20180518120658&SearchText=YM2612
-1x - U12 - I2C OLED - https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20180518121221&SearchText=I2C+OLED+1.3
+1x - U12 - I2C OLED 1.3in. SH1106 - https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20180518121221&SearchText=I2C+OLED+1.3
