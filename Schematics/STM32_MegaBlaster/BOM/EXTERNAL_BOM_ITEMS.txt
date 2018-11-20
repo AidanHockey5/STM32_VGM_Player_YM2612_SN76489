@@ -6,4 +6,4 @@
 1x - U3 - YM2612 - https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20180518120658&SearchText=YM2612
 1x - U12 - I2C OLED 1.3in. SH1106 - https://www.aliexpress.com/wholesale?catId=0&initiative_id=SB_20180518121221&SearchText=I2C+OLED+1.3
 
-[[[OLED WARNING! Check for SH1106, not SSD306. Check pin order! Pin order must be: GND, VCC, SCL(SCK), SDA. Most OLEDs feature a set of jumper resistors on the back to adjust these pins should you order a display with an incorrect pin configuration.]]]
+[[[OLED WARNING! Check for SH1106, not SSD1306. Check pin order! Pin order must be: GND, VCC, SCL(SCK), SDA. Most OLEDs feature a set of jumper resistors on the back to adjust these pins should you order a display with an incorrect pin configuration.]]]
