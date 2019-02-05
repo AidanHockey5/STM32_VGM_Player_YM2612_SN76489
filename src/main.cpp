@@ -128,6 +128,7 @@ void setup()
 
   //RAM
   ram.Init();
+<<<<<<< HEAD
 
   //OLED
   oled.begin();
@@ -136,6 +137,8 @@ void setup()
   oled.sendBuffer();
   delay(3000);
   oled.clearDisplay();
+=======
+>>>>>>> 65302f6372902c7190a563c97648dea6be4b912d
 
   //SD
   if(!SD.begin(PA4, SD_SCK_HZ(F_CPU/2)))

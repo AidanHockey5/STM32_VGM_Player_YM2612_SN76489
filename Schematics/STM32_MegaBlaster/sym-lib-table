@@ -1,7 +1,7 @@
 (sym_lib_table
   (lib (name bluepill_breakouts)(type Legacy)(uri ${KIPRJMOD}/libraries/bluepill_breakouts.lib)(options "")(descr ""))
   (lib (name ym2612)(type Legacy)(uri ${KIPRJMOD}/libraries/ym2612.lib)(options "")(descr ""))
-  (lib (name sn769486)(type Legacy)(uri ${KIPRJMOD}/libraries/sn769486.lib)(options "")(descr ""))
+  (lib (name sn76489)(type Legacy)(uri ${KIPRJMOD}/libraries/sn76489.lib)(options "")(descr ""))
   (lib (name CH340G)(type Legacy)(uri ${KIPRJMOD}/libraries/CH340G.lib)(options "")(descr ""))
   (lib (name LTC6903)(type Legacy)(uri ${KIPRJMOD}/libraries/LTC6903.lib)(options "")(descr ""))
   (lib (name 23LC1024)(type Legacy)(uri ${KIPRJMOD}/libraries/23LC1024.lib)(options "")(descr ""))
