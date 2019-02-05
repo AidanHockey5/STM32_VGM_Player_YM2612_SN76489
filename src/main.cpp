@@ -54,6 +54,7 @@ bool ramPrefetchFlag = false;
 
 //OLED
 U8G2_SH1106_128X64_NONAME_F_HW_I2C oled(U8G2_R0);
+//U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0);
 bool isOledOn = true;
 
 //Data Bus
@@ -127,7 +128,14 @@ void setup()
 
   //RAM
   ram.Init();
-  while(!Serial){};
+
+  //OLED
+  oled.begin();
+  oled.setFont(u8g2_font_fub11_tf);
+  oled.drawXBM(0,0, logo_width, logo_height, logo);
+  oled.sendBuffer();
+  delay(3000);
+  oled.clearDisplay();
 
   //SD
   if(!SD.begin(PA4, SD_SCK_HZ(F_CPU/2)))
@@ -137,16 +145,8 @@ void setup()
     oled.drawStr(0,16,"SD Mount");
     oled.drawStr(0,32,"failed!");
     oled.sendBuffer();
-    while(true){}
+    while(true){Serial.println("SD MOUNT FAILED"); delay(1000);}
   }
-
-  //OLED
-  oled.begin();
-  oled.setFont(u8g2_font_fub11_tf);
-  oled.drawXBM(0,0, logo_width, logo_height, logo);
-  oled.sendBuffer();
-  delay(3000);
-  oled.clearDisplay();
 
   //Prepare files
   removeSVI();

@@ -1,4 +1,4 @@
-(kicad_pcb (version 20171130) (host pcbnew "(5.0.0-rc2-dev-493-gd776eaca8)")
+(kicad_pcb (version 20171130) (host pcbnew "(5.0.2)-1")
 
   (general
     (thickness 1.6)
@@ -58,6 +58,7 @@
     (pad_size 2 1.4)
     (pad_drill 1.2)
     (pad_to_mask_clearance 0.2)
+    (solder_mask_min_width 0.25)
     (aux_axis_origin 0 0)
     (visible_elements 7FFFFFFF)
     (pcbplotparams
@@ -74,7 +75,7 @@
       (useauxorigin false)
       (hpglpennumber 1)
       (hpglpenspeed 20)
-      (hpglpendiameter 15)
+      (hpglpendiameter 15.000000)
       (psnegative false)
       (psa4output false)
       (plotreference true)
@@ -86,7 +87,7 @@
       (mirror false)
       (drillshape 0)
       (scaleselection 1)
-      (outputdirectory Megablaster_Gerber/))
+      (outputdirectory "Megablaster_Gerber/"))
   )
 
   (net 0 "")
@@ -4605,7 +4606,7 @@
       (net 66 "Net-(U1-Pad1)"))
   )
 
-  (module Housings_DIP:DIP-16_W7.62mm (layer F.Cu) (tedit 59C78D6B) (tstamp 5AE37F75)
+  (module Housings_DIP:DIP-16_W7.62mm (layer F.Cu) (tedit 5C5A0CD6) (tstamp 5AE37F75)
     (at 116.205 78.74 90)
     (descr "16-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)")
     (tags "THT DIP DIL PDIP 2.54mm 7.62mm 300mil")
@@ -4613,7 +4614,7 @@
     (fp_text reference U2 (at 1.905 -2.54 90) (layer F.SilkS)
       (effects (font (size 1 1) (thickness 0.15)))
     )
-    (fp_text value SN769486 (at 3.81 20.11 90) (layer F.Fab)
+    (fp_text value SN76489 (at 3.81 20.11 90) (layer F.Fab)
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_arc (start 3.81 -1.33) (end 2.81 -1.33) (angle -180) (layer F.SilkS) (width 0.12))
