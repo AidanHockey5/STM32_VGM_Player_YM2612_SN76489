@@ -13,7 +13,7 @@
 #include "ringbuffer.h"
 
 //Debug variables
-#define DEBUG false //Set this to true for a detailed printout of the header data & any errored commnand bytes
+#define DEBUG false //Set this to true for a detailed printout of the header data & any errored command bytes
 #define DEBUG_LED PA8
 bool commandFailed = false;
 uint8_t failedCmd = 0x00;
@@ -27,7 +27,7 @@ void removeSVI();
 void prebufferLoop();
 void injectPrebuffer();
 void fillBuffer();
-bool topUpBufffer(); 
+bool topUpBuffer(); 
 void clearBuffers();
 void handleButtons();
 void prepareChips();
@@ -128,7 +128,6 @@ void setup()
 
   //RAM
   ram.Init();
-<<<<<<< HEAD
 
   //OLED
   oled.begin();
@@ -137,8 +136,6 @@ void setup()
   oled.sendBuffer();
   delay(3000);
   oled.clearDisplay();
-=======
->>>>>>> 65302f6372902c7190a563c97648dea6be4b912d
 
   //SD
   if(!SD.begin(PA4, SD_SCK_HZ(F_CPU/2)))
@@ -559,11 +556,11 @@ void injectPrebuffer()
 //Completely fill command buffer
 void fillBuffer()
 {
-  while(!topUpBufffer()){};
+  while(!topUpBuffer()){};
 }
 
 //Add to buffer from SD card. Returns true when buffer is full
-bool topUpBufffer() 
+bool topUpBuffer() 
 {
   if(cmdBuffer.full())
     return true;
@@ -586,7 +583,7 @@ uint8_t readBuffer()
 {
   if(cmdBuffer.empty()) //Buffer exauhsted prematurely. Force replenish
   {
-    topUpBufffer();
+    topUpBuffer();
   }
   bufferPos++;
   cmdPos++;
@@ -872,7 +869,7 @@ void handleButtons()
 
 void loop()
 {    
-  topUpBufffer();
+  topUpBuffer();
   if(ramPrefetchFlag)
   {
     ramPrefetch = ram.ReadByte(pcmBufferPosition);
