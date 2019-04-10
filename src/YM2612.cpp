@@ -21,7 +21,7 @@ void YM2612::Reset()
     GPIOB->regs->BSRR = (1U << 4) << (16 * 0); //_IC HIGH
 }
 
-void YM2612::SendDataPins(unsigned char addr, unsigned char data, bool setA1) //0x52 = A1 LOW, 0x53 = A1 HIGH
+void YM2612::Send(unsigned char addr, unsigned char data, bool setA1) //0x52 = A1 LOW, 0x53 = A1 HIGH
 {
     GPIOB->regs->BSRR = (1U << 0) << (16 * !setA1); //_A1 PB0
     GPIOA->regs->ODR &= ~(0x0800); //_A0 LOW

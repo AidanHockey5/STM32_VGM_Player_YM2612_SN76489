@@ -6,10 +6,12 @@ class SN76489
 {
 private:
     Bus * _bus;
+    unsigned char psgFrqLowByte = 0;
+    void Write(unsigned char data);
 public:
     SN76489(Bus * bus);
     void Reset();
-    void SendDataPins(unsigned char data);
+    void Send(unsigned char data);
 };
 #endif
 

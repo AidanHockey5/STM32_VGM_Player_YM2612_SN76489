@@ -6,11 +6,10 @@ class YM2612
 {
 private:
     Bus * _bus;
-    void WriteDataPins(unsigned char data);
 public:
     YM2612(Bus * bus);
     void Reset();
-    void SendDataPins(unsigned char addr, unsigned char data, bool setA1);
+    void Send(unsigned char addr, unsigned char data, bool setA1);
 };
 #endif
 

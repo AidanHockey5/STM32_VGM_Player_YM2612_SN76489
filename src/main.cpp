@@ -647,24 +647,24 @@ uint16_t parseVGM()
   switch(cmd)
   {
     case 0x4F:
-    sn76489.SendDataPins(0x06);
-    sn76489.SendDataPins(readBuffer());
+    sn76489.Send(0x06);
+    sn76489.Send(readBuffer());
     return 1;
     case 0x50:
-    sn76489.SendDataPins(readBuffer());
+    sn76489.Send(readBuffer());
     return 1;
     case 0x52:
     {
     uint8_t addr = readBuffer();
     uint8_t data = readBuffer();
-    ym2612.SendDataPins(addr, data, 0);
+    ym2612.Send(addr, data, 0);
     }
     return 1;
     case 0x53:
     {
     uint8_t addr = readBuffer();
     uint8_t data = readBuffer();
-    ym2612.SendDataPins(addr, data, 1);
+    ym2612.Send(addr, data, 1);
     }
     return 1;
     case 0x61:
@@ -732,7 +732,7 @@ uint16_t parseVGM()
       uint8_t addr = 0x2A;
       uint8_t data = ramPrefetch;
       pcmBufferPosition++;
-      ym2612.SendDataPins(addr, data, 0);
+      ym2612.Send(addr, data, 0);
       return wait;
     }
     case 0xE0:
