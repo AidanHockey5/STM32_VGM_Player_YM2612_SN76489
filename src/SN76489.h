@@ -2,6 +2,7 @@
 #define SN76489_H_
 #include <Arduino.h>
 #include "Bus.h"
+#include "TrackStructs.h"
 class SN76489
 {
 private:

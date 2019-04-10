@@ -97,8 +97,6 @@ uint8_t maxLoops = 3;
 bool fetching = false;
 volatile bool ready = false;
 bool samplePlaying = false;
-VGMHeader header;
-GD3 gd3;
 PlayMode playMode = SHUFFLE;
 
 void setup()
