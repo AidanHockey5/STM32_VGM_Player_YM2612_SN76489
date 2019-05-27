@@ -612,7 +612,7 @@ uint32_t readBuffer32()
   return d;
 }
 
-//Read 32 bits right off of the SD card.
+//Read 32 bits right off of the SD card
 uint32_t readSD32()
 {
   uint32_t d;
