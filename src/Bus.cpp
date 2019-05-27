@@ -10,7 +10,7 @@ Bus::Bus()
 
 void Bus::Write(unsigned char data)
 {
-    data = ~data;
+    //data = ~data;
     GPIOB->regs->BSRR = (1U << 8) << (16 * ((data >> 0)&1));
     GPIOB->regs->BSRR = (1U << 9) << (16 * ((data >> 1)&1));
     GPIOC->regs->BSRR = (1U << 13) << (16 * ((data >> 2)&1));
