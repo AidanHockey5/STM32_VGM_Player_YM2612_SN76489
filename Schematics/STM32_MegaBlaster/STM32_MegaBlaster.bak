@@ -32,7 +32,7 @@ F 3 "www.rogerclark.net" H 1800 1650 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L sn769486:SN769486 U2
+L sn76489:SN76489 U2
 U 1 1 5ADCFD43
 P 4600 2200
 F 0 "U2" H 4675 3087 60  0000 C CNN
