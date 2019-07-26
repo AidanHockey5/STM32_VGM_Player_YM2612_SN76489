@@ -105,6 +105,7 @@ void setup()
   //DEBUG
   pinMode(DEBUG_LED, OUTPUT);
   digitalWrite(DEBUG_LED, LOW);
+  disableDebugPorts();
 
   //Buttons
   pinMode(prev_btn, INPUT_PULLUP);
