@@ -23,7 +23,7 @@ void setup();
 void loop();
 void handleSerialIn();
 void tick();
-void removeSVI();
+void removeMeta();
 void prebufferLoop();
 void injectPrebuffer();
 void fillBuffer();
@@ -149,11 +149,14 @@ void setup()
   }
 
   //Prepare files
-  removeSVI();
+  removeMeta();
 
   File countFile;
   while ( countFile.openNext( SD.vwd(), O_READ ))
   {
+    char fname[256];
+    countFile.getName(fname, 256); 
+    Serial.println(fname);
     countFile.close();
     numberOfFiles++;
   }
@@ -167,6 +170,32 @@ void setup()
   startTrack(FIRST_START);
   vgmVerify();
   prepareChips();
+}
+
+void removeMeta() //Remove useless meta files
+{
+  File tmpFile;
+  while ( tmpFile.openNext( SD.vwd(), O_READ ))
+  {
+    memset(fileName, 0x00, MAX_FILE_NAME_SIZE);
+    tmpFile.getName(fileName, MAX_FILE_NAME_SIZE);
+    if(fileName[0]=='.')
+    {
+      if(!SD.remove(fileName))
+      if(!tmpFile.rmRfStar())
+      {
+        Serial.print("FAILED TO DELETE META FILE"); Serial.println(fileName);
+      }
+    }
+    if(String(fileName) == "System Volume Information")
+    {
+      if(!tmpFile.rmRfStar())
+        Serial.println("FAILED TO REMOVE SVI");
+    }
+    tmpFile.close();
+  }
+  tmpFile.close();
+  SD.vwd()->rewind();
 }
 
 void setISR()
@@ -511,22 +540,6 @@ void readGD3()
     }
   }
   file.seekSet(prevLocation);
-}
-
-void removeSVI() //Sometimes, Windows likes to place invisible files in our SD card without asking... GTFO!
-{
-  File nextFile;
-  nextFile.openNext(SD.vwd(), O_READ);
-  char name[MAX_FILE_NAME_SIZE];
-  nextFile.getName(name, MAX_FILE_NAME_SIZE);
-  String n = String(name);
-  if(n == "System Volume Information")
-  {
-      if(!nextFile.rmRfStar())
-        Serial.println("Failed to remove SVI file");
-  }
-  SD.vwd()->rewind();
-  nextFile.close();
 }
 
 //Keep a small cache of commands right at the loop point to prevent excessive SD seeking lag
