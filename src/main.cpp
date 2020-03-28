@@ -542,6 +542,35 @@ void readGD3()
   file.seekSet(prevLocation);
 }
 
+<<<<<<< HEAD
+=======
+void removeMeta() //Remove useless meta files
+{
+  File tmpFile;
+  while ( tmpFile.openNext( SD.vwd(), O_READ ))
+  {
+    memset(fileName, 0x00, MAX_FILE_NAME_SIZE);
+    tmpFile.getName(fileName, MAX_FILE_NAME_SIZE);
+    if(fileName[0]=='.')
+    {
+      if(!SD.remove(fileName))
+      if(!tmpFile.rmRfStar())
+      {
+        Serial.print("FAILED TO DELETE META FILE"); Serial.println(fileName);
+      }
+    }
+    if(String(fileName) == "System Volume Information")
+    {
+      if(!tmpFile.rmRfStar())
+        Serial.println("FAILED TO REMOVE SVI");
+    }
+    tmpFile.close();
+  }
+  tmpFile.close();
+  SD.vwd()->rewind();
+}
+
+>>>>>>> c9c91fedcdfdc7fd2bf9b7c765678d06af7ef7d1
 //Keep a small cache of commands right at the loop point to prevent excessive SD seeking lag
 void prebufferLoop() 
 {
