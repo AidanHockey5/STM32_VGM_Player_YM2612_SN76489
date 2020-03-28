@@ -154,9 +154,6 @@ void setup()
   File countFile;
   while ( countFile.openNext( SD.vwd(), O_READ ))
   {
-    char fname[256];
-    countFile.getName(fname, 256); 
-    Serial.println(fname);
     countFile.close();
     numberOfFiles++;
   }
