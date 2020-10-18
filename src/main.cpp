@@ -11,6 +11,7 @@
 #include "Bus.h"
 #include "TrackStructs.h"
 #include "ringbuffer.h"
+#include "LUT.h"
 
 //Debug variables
 #define DEBUG false //Set this to true for a detailed printout of the header data & any errored command bytes
@@ -36,6 +37,7 @@ void setISR();
 void drawOLEDTrackInfo();
 bool startTrack(FileStrategy fileStrategy, String request = "");
 bool vgmVerify();
+uint8_t VgmCommandLength(uint8_t Command);
 uint8_t readBuffer();
 uint16_t readBuffer16();
 uint32_t readBuffer32();
@@ -650,122 +652,134 @@ void tick()
   }
 }
 
+uint8_t VgmCommandLength(uint8_t Command) //including the command itself. only for fixed size commands
+{ 
+    //Also natalie, tyvm
+    uint8_t val = CommandLengthLUT[Command];
+    if (val) return val;
+    return 0xFF;
+}
+
 //Execute next VGM command set. Return back wait time in samples
 uint16_t parseVGM() 
 {
-  uint8_t cmd = readBuffer();
-  switch(cmd)
+  uint8_t cmd;
+  do
   {
-    case 0x4F:
-    sn76489.Send(0x06);
-    sn76489.Send(readBuffer());
-    return 1;
-    case 0x50:
-    sn76489.Send(readBuffer());
-    return 1;
-    case 0x52:
+    cmd = readBuffer();
+    switch(cmd)
     {
-    uint8_t addr = readBuffer();
-    uint8_t data = readBuffer();
-    ym2612.Send(addr, data, 0);
-    }
-    return 1;
-    case 0x53:
-    {
-    uint8_t addr = readBuffer();
-    uint8_t data = readBuffer();
-    ym2612.Send(addr, data, 1);
-    }
-    return 1;
-    case 0x61:
-    return readBuffer16();
-    case 0x62:
-    return 735;
-    case 0x63:
-    return 882;
-    case 0x67:
-    {
-      readBuffer16(); //Discard 0x66 and datatype byte
-      pcmBufferPosition = cmdPos;
-      uint32_t PCMSize = readBuffer32();
-      if(PCMSize > MAX_PCM_BUFFER_SIZE)
+      case 0x4F:
+      sn76489.Send(0x06);
+      sn76489.Send(readBuffer());
+      return 1;
+      case 0x50:
+      sn76489.Send(readBuffer());
+      return 1;
+      case 0x52:
       {
-        startTrack(NEXT);
-        Serial.println("PCM Size too big!");
-      }
-      for (uint32_t i = 0; i < PCMSize; i++)
-      {
-        ram.WriteByte(i, readBuffer());
-      }
-      fillBuffer();
-    }
-    return 0;
-    case 0x70:
-    case 0x71:
-    case 0x72:
-    case 0x73:
-    case 0x74:
-    case 0x75:
-    case 0x76:
-    case 0x77:
-    case 0x78:
-    case 0x79:
-    case 0x7A:
-    case 0x7B:
-    case 0x7C:
-    case 0x7D:
-    case 0x7E:
-    case 0x7F:
-    {
-      return (cmd & 0x0F)+1;
-    }
-    case 0x80:
-    case 0x81:
-    case 0x82:
-    case 0x83:
-    case 0x84:
-    case 0x85:
-    case 0x86:
-    case 0x87:
-    case 0x88:
-    case 0x89:
-    case 0x8A:
-    case 0x8B:
-    case 0x8C:
-    case 0x8D:
-    case 0x8E:
-    case 0x8F:
-    {
-      //RAM Prefetching. Store the next byte of PCM sample data in a char that will cache itself between samples
-      ramPrefetchFlag = true;
-      uint32_t wait = cmd & 0x0F;
-      uint8_t addr = 0x2A;
-      uint8_t data = ramPrefetch;
-      pcmBufferPosition++;
+      uint8_t addr = readBuffer();
+      uint8_t data = readBuffer();
       ym2612.Send(addr, data, 0);
-      return wait;
+      }
+      return 1;
+      case 0x53:
+      {
+      uint8_t addr = readBuffer();
+      uint8_t data = readBuffer();
+      ym2612.Send(addr, data, 1);
+      }
+      return 1;
+      case 0x61:
+      return readBuffer16();
+      case 0x62:
+      return 735;
+      case 0x63:
+      return 882;
+      case 0x67:
+      {
+        readBuffer16(); //Discard 0x66 and datatype byte
+        pcmBufferPosition = cmdPos;
+        uint32_t PCMSize = readBuffer32();
+        if(PCMSize > MAX_PCM_BUFFER_SIZE)
+        {
+          startTrack(NEXT);
+          Serial.println("PCM Size too big!");
+        }
+        for (uint32_t i = 0; i < PCMSize; i++)
+        {
+          ram.WriteByte(i, readBuffer());
+        }
+        fillBuffer();
+      }
+      return 0;
+      case 0x70:
+      case 0x71:
+      case 0x72:
+      case 0x73:
+      case 0x74:
+      case 0x75:
+      case 0x76:
+      case 0x77:
+      case 0x78:
+      case 0x79:
+      case 0x7A:
+      case 0x7B:
+      case 0x7C:
+      case 0x7D:
+      case 0x7E:
+      case 0x7F:
+      {
+        return (cmd & 0x0F)+1;
+      }
+      case 0x80:
+      case 0x81:
+      case 0x82:
+      case 0x83:
+      case 0x84:
+      case 0x85:
+      case 0x86:
+      case 0x87:
+      case 0x88:
+      case 0x89:
+      case 0x8A:
+      case 0x8B:
+      case 0x8C:
+      case 0x8D:
+      case 0x8E:
+      case 0x8F:
+      {
+        //RAM Prefetching. Store the next byte of PCM sample data in a char that will cache itself between samples
+        ramPrefetchFlag = true;
+        uint32_t wait = cmd & 0x0F;
+        uint8_t addr = 0x2A;
+        uint8_t data = ramPrefetch;
+        pcmBufferPosition++;
+        ym2612.Send(addr, data, 0);
+        return wait;
+      }
+      case 0xE0:
+      {
+        pcmBufferPosition = readBuffer32();
+      }
+      //PCMseek
+      return 0;
+      case 0x66:
+      {
+      ready = false;
+      clearBuffers();
+      cmdPos = 0;
+      injectPrebuffer();
+      loopCount++;
+      ready = true;
+      }
+      return 0;
+      default:
+      commandFailed = true;
+      failedCmd = cmd;
+      return 0;
     }
-    case 0xE0:
-    {
-      pcmBufferPosition = readBuffer32();
-    }
-    //PCMseek
-    return 0;
-    case 0x66:
-    {
-    ready = false;
-    clearBuffers();
-    cmdPos = 0;
-    injectPrebuffer();
-    loopCount++;
-    ready = true;
-    }
-    return 0;
-    default:
-    commandFailed = true;
-    failedCmd = cmd;
-    return 0;
-  }
+  }while(VgmCommandLength(cmd));
   return 0;
 }
 
