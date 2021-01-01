@@ -47,18 +47,19 @@ void YM2612::write(uint8_t addr, uint8_t data, bool a1)
 
     GPIOB->regs->BSRR = (1U << 0) << (16 * !a1); //_A1 PB0
     GPIOA->regs->ODR &= ~(0x0800); //_A0 LOW
+    nop;
     bus->write(addr);
     GPIOB->regs->ODR &= ~(0x0808); //_CS LOW
     GPIOA->regs->ODR &= ~(0x1000); //_WR LOW
-    //delay_us(1);
+    nop;
     GPIOA->regs->ODR |= 0x1000;    //_WR HIGH 
     GPIOA->regs->ODR |= 0x0800;    //_A0 HIGH
     bus->write(data);
     GPIOA->regs->ODR &= ~(0x1000); //_WR LOW
-    //delay_us(1);
+    nop;
     GPIOA->regs->ODR |= 0x1000;    //_WR HIGH
     GPIOB->regs->ODR |= 0x0808;    //_CS HIGH
-    //delay may be needed here.
+    nop;nop;nop;nop;nop;
 }
 
 void YM2612::reset()

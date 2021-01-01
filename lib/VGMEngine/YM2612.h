@@ -4,6 +4,8 @@
 #include "Bus.h"
 #include "SpinSleep.h"
 
+#define nop __asm__ __volatile__ ("nop\n\t")
+
 class YM2612
 {
 public:
