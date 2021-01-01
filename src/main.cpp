@@ -349,7 +349,7 @@ bool startTrack(FileStrategy fileStrategy, String request)
   }
   else
   {
-    delay(200);
+    delay(100);
     if(VGMEngine.begin(&file))
     {
       printlnw(VGMEngine.gd3.enGameName);
