@@ -48,7 +48,7 @@ uint8_t VGMEngineClass::readBufOne()
 {
     if(MegaStream_Used(&stream) < 1)
     {
-        digitalWrite(PA8, HIGH);
+        //digitalWrite(PA8, HIGH);
         load();
         empty = 1;
     }
@@ -61,7 +61,7 @@ uint16_t VGMEngineClass::readBuf16()
 {
     if(MegaStream_Used(&stream) < 2)
     {
-        digitalWrite(PA8, HIGH);
+        //digitalWrite(PA8, HIGH);
         load();
         empty = 16;
     }
@@ -76,7 +76,7 @@ uint32_t VGMEngineClass::readBuf32()
 {
     if(MegaStream_Used(&stream) < 4)
     {
-        digitalWrite(PA8, HIGH);
+        //digitalWrite(PA8, HIGH);
         load();
         empty = 32;
     }
@@ -189,8 +189,7 @@ void VGMEngineClass::tick()
 {
     if(!ready)
         return;
-    //if(waitSamples > 0)
-        waitSamples--;      
+    waitSamples--;      
 }
 
 bool VGMEngineClass::play()

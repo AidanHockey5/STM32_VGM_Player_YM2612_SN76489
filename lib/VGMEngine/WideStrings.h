@@ -14,5 +14,6 @@ union wide
 unsigned short wstrlen(wide *in); 
 //Converts wide chars to standard chars. GD3 specific, not for general usage.
 char* widetochar(wide* in);
+static char* OUTPUT_WIDE_TO_CHAR;
 
 #endif

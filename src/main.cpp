@@ -99,7 +99,7 @@ void setup()
   //DEBUG
   pinMode(DEBUG_LED, OUTPUT);
   digitalWrite(DEBUG_LED, LOW);
-  //disableDebugPorts();
+  disableDebugPorts();
   resetSleepSpin();
 
   //Buttons
@@ -322,14 +322,12 @@ bool startTrack(FileStrategy fileStrategy, String request)
     break;
     case REQUEST:
     {
-      bool fileFound = false;
       request.trim();
       char *cstr = &request[0u]; //Convert to C-string
       if(SD.exists(cstr))
       {
         file.close();
         strcpy(fileName, cstr);
-        fileFound = true;
         Serial.println("File found!");
       }
       else
@@ -351,6 +349,7 @@ bool startTrack(FileStrategy fileStrategy, String request)
   }
   else
   {
+    delay(200);
     if(VGMEngine.begin(&file))
     {
       printlnw(VGMEngine.gd3.enGameName);
@@ -384,6 +383,7 @@ void handleSerialIn()
 {
   while(Serial.available())
   {
+    pauseISR();
     char serialCmd = Serial.read();
     switch(serialCmd)
     {
@@ -425,6 +425,8 @@ void handleSerialIn()
         continue;
     }
   }
+  Serial.flush();
+  setISR();
 }
 
 //Check for button input

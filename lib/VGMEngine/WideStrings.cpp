@@ -12,15 +12,15 @@ unsigned short wstrlen(wide *in)
 
 char* widetochar(wide* in) 
 {
-    char* out;
+    free(OUTPUT_WIDE_TO_CHAR);
     unsigned short size = wstrlen(in);
     if(size == 0)
         return 0;
-    out = (char*)malloc(sizeof(char) * (size));
+    OUTPUT_WIDE_TO_CHAR = (char*)malloc(sizeof(char) * (size));
     for(int i = 0; i<size-1; i++)
     {
-        out[i] = in[i].bytes[0];
+        OUTPUT_WIDE_TO_CHAR[i] = in[i].bytes[0];
     }
-    out[size-1] = '\0';
-    return out;
+    OUTPUT_WIDE_TO_CHAR[size-1] = '\0';
+    return OUTPUT_WIDE_TO_CHAR;
 }

@@ -22,6 +22,7 @@ GD3::~GD3()
 
 bool GD3::read(File *f, uint32_t gd3Offset)
 {
+    free(data);
     uint32_t prePos = f->curPosition(); 
     f->seek(gd3Offset);
     uint32_t magic = 0; 
