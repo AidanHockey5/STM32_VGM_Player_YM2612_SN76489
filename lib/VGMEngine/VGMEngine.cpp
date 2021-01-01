@@ -102,7 +102,7 @@ bool VGMEngineClass::storePCM(bool skip)
     if(file->peek() == 0x67) //PCM Block
     {
         isPCM = true;
-        Serial.println("pcm");
+        //Serial.println("pcm");
         file->read(); //0x67
         file->read(); //0x66
         file->read(); //datatype
@@ -189,21 +189,16 @@ void VGMEngineClass::tick()
 {
     if(!ready)
         return;
-    if(waitSamples != 0)
-        waitSamples--;        
+    //if(waitSamples > 0)
+        waitSamples--;      
 }
 
 bool VGMEngineClass::play()
 {
-    long s = micros(); //start time of a cycle
     load(); 
-    if(waitSamples == 0)
+    while(waitSamples <= 0)
     {
         waitSamples += parseVGM();
-        long e = micros(); //end time of a cycle
-        waitSamples -= (e-s) / 22.6757; //Compensate for long write times
-        if(waitSamples < 0)
-            waitSamples = 0;
     }
     if(loopCount == maxLoops)
         return true;
