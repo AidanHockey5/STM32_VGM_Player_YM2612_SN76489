@@ -1,6 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:STM32_MegaBlaster-cache
-EELAYER 26 0
+EELAYER 30 0
 EELAYER END
 $Descr A3 16535 11693
 encoding utf-8
@@ -130,7 +129,7 @@ F 3 "" H 7250 4300 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L linear:TL062 U8
+L STM32_MegaBlaster-rescue:TL062-linear U8
 U 1 1 5ADD1B3D
 P 14850 6200
 F 0 "U8" H 14950 6300 50  0000 L CNN
@@ -141,7 +140,7 @@ F 3 "http://www.ti.com/lit/ds/symlink/tl061.pdf" H 14850 6200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L conn:USB_B J2
+L STM32_MegaBlaster-rescue:USB_B-conn J2
 U 1 1 5ADD26D6
 P 1000 5650
 F 0 "J2" H 1055 6117 50  0000 C CNN
@@ -163,7 +162,7 @@ F 3 "" H 11150 2600 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L regul:LD1117S33TR_SOT223 U10
+L STM32_MegaBlaster-rescue:LD1117S33TR_SOT223-regul U10
 U 1 1 5ADD35B1
 P 7750 6050
 F 0 "U10" H 7750 6292 50  0000 C CNN
@@ -174,7 +173,7 @@ F 3 "http://www.st.com/st-web-ui/static/active/en/resource/technical/document/da
 	1    0    0    -1  
 $EndComp
 $Comp
-L dc-dc:LM2596T-5 U11
+L STM32_MegaBlaster-rescue:LM2596T-5-dc-dc U11
 U 1 1 5ADD3D87
 P 5650 6100
 F 0 "U11" H 5650 6467 50  0000 C CNN
@@ -185,7 +184,7 @@ F 3 "http://www.ti.com/lit/ds/symlink/lm2576.pdf" H 5650 6100 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L conn:SD_Card J1
+L STM32_MegaBlaster-rescue:SD_Card-conn J1
 U 1 1 5ADD7173
 P 7600 9200
 F 0 "J1" V 7554 9728 50  0000 L CNN
@@ -272,7 +271,7 @@ AVCC
 Text GLabel 5850 3550 2    50   Input ~ 0
 AGND
 $Comp
-L device:C_Small C1
+L STM32_MegaBlaster-rescue:C_Small-device C1
 U 1 1 5ADDA7C2
 P 5700 3400
 F 0 "C1" H 5792 3446 50  0000 L CNN
@@ -308,7 +307,7 @@ F 3 "" H 5800 3150 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:C_Small C2
+L STM32_MegaBlaster-rescue:C_Small-device C2
 U 1 1 5ADDB1F9
 P 5700 3150
 F 0 "C2" V 5500 3150 50  0000 C CNN
@@ -360,7 +359,7 @@ F 3 "" H 5200 2400 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C_Small C3
+L STM32_MegaBlaster-rescue:C_Small-device C3
 U 1 1 5ADDEE11
 P 5500 1900
 F 0 "C3" H 5592 1946 50  0000 L CNN
@@ -436,7 +435,7 @@ Wire Wire Line
 Text GLabel 8050 1900 2    50   Input ~ 0
 YM_CLK
 $Comp
-L device:C_Small C4
+L STM32_MegaBlaster-rescue:C_Small-device C4
 U 1 1 5ADE2852
 P 7850 2100
 F 0 "C4" H 7942 2146 50  0000 L CNN
@@ -571,7 +570,7 @@ Wire Wire Line
 	7900 2850 7800 2850
 Connection ~ 7900 2750
 $Comp
-L device:C_Small C5
+L STM32_MegaBlaster-rescue:C_Small-device C5
 U 1 1 5ADE8861
 P 7900 3150
 F 0 "C5" H 7992 3196 50  0000 L CNN
@@ -640,7 +639,7 @@ F 3 "" H 7950 3750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C_Small C6
+L STM32_MegaBlaster-rescue:C_Small-device C6
 U 1 1 5ADD3151
 P 8350 3800
 F 0 "C6" V 8121 3800 50  0000 C CNN
@@ -665,7 +664,7 @@ Connection ~ 7950 3800
 Wire Wire Line
 	7950 3750 7950 3800
 $Comp
-L device:R R1
+L STM32_MegaBlaster-rescue:R-device R1
 U 1 1 5ADD6466
 P 8100 3900
 F 0 "R1" V 8050 3750 50  0000 C CNN
@@ -690,7 +689,7 @@ Text GLabel 6850 3900 0    50   Input ~ 0
 RAM_MISO
 NoConn ~ 6850 4000
 $Comp
-L switches:SW_Push_Dual SW1
+L STM32_MegaBlaster-rescue:SW_Push_Dual-switches SW1
 U 1 1 5ADD9E2C
 P 3000 9000
 F 0 "SW1" H 3000 9285 50  0000 C CNN
@@ -701,7 +700,7 @@ F 3 "" H 3000 9200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L switches:SW_Push_Dual SW2
+L STM32_MegaBlaster-rescue:SW_Push_Dual-switches SW2
 U 1 1 5ADDA342
 P 3700 9000
 F 0 "SW2" H 3700 9285 50  0000 C CNN
@@ -712,7 +711,7 @@ F 3 "" H 3700 9200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L switches:SW_Push_Dual SW3
+L STM32_MegaBlaster-rescue:SW_Push_Dual-switches SW3
 U 1 1 5ADDA386
 P 4400 9000
 F 0 "SW3" H 4400 9285 50  0000 C CNN
@@ -723,7 +722,7 @@ F 3 "" H 4400 9200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L switches:SW_Push_Dual SW4
+L STM32_MegaBlaster-rescue:SW_Push_Dual-switches SW4
 U 1 1 5ADDA3D8
 P 5150 9000
 F 0 "SW4" H 5150 9285 50  0000 C CNN
@@ -833,7 +832,7 @@ F 3 "" H 8250 5900 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C_Small C7
+L STM32_MegaBlaster-rescue:C_Small-device C7
 U 1 1 5ADE386F
 P 7250 6300
 F 0 "C7" H 7342 6346 50  0000 L CNN
@@ -854,7 +853,7 @@ Connection ~ 7750 6450
 Wire Wire Line
 	7750 6450 7750 6350
 $Comp
-L device:CP1_Small C8
+L STM32_MegaBlaster-rescue:CP1_Small-device C8
 U 1 1 5ADE554C
 P 8250 6300
 F 0 "C8" H 8341 6346 50  0000 L CNN
@@ -880,7 +879,7 @@ Wire Wire Line
 Wire Wire Line
 	3100 2650 2900 2650
 $Comp
-L device:R R2
+L STM32_MegaBlaster-rescue:R-device R2
 U 1 1 5ADF4813
 P 2900 2800
 F 0 "R2" H 2950 2850 50  0000 L CNN
@@ -894,7 +893,7 @@ Connection ~ 2900 2650
 Wire Wire Line
 	2900 2650 2700 2650
 $Comp
-L device:R R3
+L STM32_MegaBlaster-rescue:R-device R3
 U 1 1 5ADF4883
 P 3100 2800
 F 0 "R3" H 3150 2850 50  0000 L CNN
@@ -980,7 +979,7 @@ $EndComp
 Wire Wire Line
 	1700 5850 1750 5850
 $Comp
-L device:C_Small C9
+L STM32_MegaBlaster-rescue:C_Small-device C9
 U 1 1 5AE03AE6
 P 1750 5650
 F 0 "C9" H 1842 5696 50  0000 L CNN
@@ -1017,7 +1016,7 @@ Wire Wire Line
 Wire Wire Line
 	1350 6350 1850 6350
 $Comp
-L device:Crystal_Small Y1
+L STM32_MegaBlaster-rescue:Crystal_Small-device Y1
 U 1 1 5AE0EAC2
 P 1300 6700
 F 0 "Y1" H 1300 6800 50  0000 C CNN
@@ -1032,7 +1031,7 @@ Wire Wire Line
 Wire Wire Line
 	1400 6700 1400 6550
 $Comp
-L device:C_Small C11
+L STM32_MegaBlaster-rescue:C_Small-device C11
 U 1 1 5AE1513A
 P 1400 6900
 F 0 "C11" H 1492 6946 50  0000 L CNN
@@ -1043,7 +1042,7 @@ F 3 "" H 1400 6900 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C_Small C10
+L STM32_MegaBlaster-rescue:C_Small-device C10
 U 1 1 5AE151E6
 P 1200 6900
 F 0 "C10" H 1000 6950 50  0000 L CNN
@@ -1090,7 +1089,7 @@ Wire Wire Line
 Wire Wire Line
 	1800 6150 1800 6800
 $Comp
-L device:C_Small C12
+L STM32_MegaBlaster-rescue:C_Small-device C12
 U 1 1 5AE22561
 P 1800 6900
 F 0 "C12" H 1892 6946 50  0000 L CNN
@@ -1127,7 +1126,7 @@ NoConn ~ 4600 9200
 NoConn ~ 5350 9000
 NoConn ~ 5350 9200
 $Comp
-L conn:Barrel_Jack J3
+L STM32_MegaBlaster-rescue:Barrel_Jack-conn J3
 U 1 1 5AE422A6
 P 3700 6300
 F 0 "J3" H 3778 6625 50  0000 C CNN
@@ -1158,7 +1157,7 @@ Wire Wire Line
 	4050 6300 4000 6300
 Connection ~ 4050 6400
 $Comp
-L switches:SW_SPST SW5
+L STM32_MegaBlaster-rescue:SW_SPST-switches SW5
 U 1 1 5AE46C81
 P 4000 5800
 F 0 "SW5" V 3954 5898 50  0000 L CNN
@@ -1219,7 +1218,7 @@ F 3 "" H 5650 6400 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:CP1_Small C13
+L STM32_MegaBlaster-rescue:CP1_Small-device C13
 U 1 1 5AE5AFDF
 P 4850 6100
 F 0 "C13" H 4941 6146 50  0000 L CNN
@@ -1243,7 +1242,7 @@ $EndComp
 Wire Wire Line
 	6150 6200 6200 6200
 $Comp
-L device:D_Schottky_Small_ALT D1
+L STM32_MegaBlaster-rescue:D_Schottky_Small_ALT-device D1
 U 1 1 5AE5E4F2
 P 6200 6650
 F 0 "D1" V 6154 6718 50  0000 L CNN
@@ -1265,7 +1264,7 @@ F 3 "" H 6200 6750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:L_Small L1
+L STM32_MegaBlaster-rescue:L_Small-device L1
 U 1 1 5AE61A7B
 P 6450 6200
 F 0 "L1" V 6400 6200 50  0000 C CNN
@@ -1288,7 +1287,7 @@ Wire Wire Line
 	6650 6200 6750 6200
 Connection ~ 6650 6200
 $Comp
-L device:CP1_Small C14
+L STM32_MegaBlaster-rescue:CP1_Small-device C14
 U 1 1 5AE6E422
 P 6650 6300
 F 0 "C14" H 6741 6346 50  0000 L CNN
@@ -1321,7 +1320,7 @@ F 3 "" H 6750 6200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C_Small C15
+L STM32_MegaBlaster-rescue:C_Small-device C15
 U 1 1 5AE79A73
 P 8100 1700
 F 0 "C15" V 7871 1700 50  0000 C CNN
@@ -1345,7 +1344,7 @@ F 3 "" H 8200 1700 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:C_Small C16
+L STM32_MegaBlaster-rescue:C_Small-device C16
 U 1 1 5AE7F979
 P 8150 2750
 F 0 "C16" V 7921 2750 50  0000 C CNN
@@ -1370,7 +1369,7 @@ Wire Wire Line
 	7900 2750 8050 2750
 Connection ~ 4850 6000
 $Comp
-L device:L_Small L2
+L STM32_MegaBlaster-rescue:L_Small-device L2
 U 1 1 5AE9B089
 P 10100 6600
 F 0 "L2" V 10285 6600 50  0000 C CNN
@@ -1394,7 +1393,7 @@ $EndComp
 Text GLabel 10200 6600 2    50   Input ~ 0
 AGND
 $Comp
-L device:L_Small L3
+L STM32_MegaBlaster-rescue:L_Small-device L3
 U 1 1 5AE9B839
 P 10100 6200
 F 0 "L3" V 10285 6200 50  0000 C CNN
@@ -1422,7 +1421,7 @@ Wire Wire Line
 Wire Wire Line
 	10200 6200 10550 6200
 $Comp
-L device:CP1_Small C17
+L STM32_MegaBlaster-rescue:CP1_Small-device C17
 U 1 1 5AEA2E17
 P 10550 6300
 F 0 "C17" H 10641 6346 50  0000 L CNN
@@ -1438,7 +1437,7 @@ Wire Wire Line
 Text GLabel 10550 6400 3    50   Input ~ 0
 AGND
 $Comp
-L device:R R4
+L STM32_MegaBlaster-rescue:R-device R4
 U 1 1 5AEA3FA6
 P 11000 6350
 F 0 "R4" H 11070 6396 50  0000 L CNN
@@ -1452,7 +1451,7 @@ Connection ~ 11000 6200
 Wire Wire Line
 	11000 6200 11200 6200
 $Comp
-L device:R R5
+L STM32_MegaBlaster-rescue:R-device R5
 U 1 1 5AEA47CA
 P 11000 6750
 F 0 "R5" H 11070 6796 50  0000 L CNN
@@ -1476,7 +1475,7 @@ Wire Wire Line
 Wire Wire Line
 	11000 6550 11300 6550
 $Comp
-L device:CP1_Small C18
+L STM32_MegaBlaster-rescue:CP1_Small-device C18
 U 1 1 5AEAE702
 P 11300 6700
 F 0 "C18" H 11391 6746 50  0000 L CNN
@@ -1500,7 +1499,7 @@ MOR
 Text GLabel 12500 7150 0    50   Input ~ 0
 MOL
 $Comp
-L device:C_Small C19
+L STM32_MegaBlaster-rescue:C_Small-device C19
 U 1 1 5AEC8A20
 P 12400 5850
 F 0 "C19" H 12150 5850 50  0000 L CNN
@@ -1522,7 +1521,7 @@ F 3 "" H 12400 5950 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:R R6
+L STM32_MegaBlaster-rescue:R-device R6
 U 1 1 5AECA1BB
 P 12550 5900
 F 0 "R6" H 12620 5946 50  0000 L CNN
@@ -1552,7 +1551,7 @@ Wire Wire Line
 Wire Wire Line
 	12500 7150 12600 7150
 $Comp
-L device:R R7
+L STM32_MegaBlaster-rescue:R-device R7
 U 1 1 5AEDA1F4
 P 12600 6450
 F 0 "R7" H 12670 6496 50  0000 L CNN
@@ -1575,7 +1574,7 @@ F 3 "" H 12600 6600 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:R R8
+L STM32_MegaBlaster-rescue:R-device R8
 U 1 1 5AEDAF81
 P 12600 7300
 F 0 "R8" H 12670 7346 50  0000 L CNN
@@ -1624,7 +1623,7 @@ $EndComp
 Wire Wire Line
 	12600 7150 12900 7150
 $Comp
-L device:R R30
+L STM32_MegaBlaster-rescue:R-device R30
 U 1 1 5AEEB5A5
 P 13250 6300
 F 0 "R30" V 13150 6300 50  0000 C CNN
@@ -1635,7 +1634,7 @@ F 3 "" H 13250 6300 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L device:R R27
+L STM32_MegaBlaster-rescue:R-device R27
 U 1 1 5AEEB84B
 P 13250 7150
 F 0 "R27" V 13150 7150 50  0000 C CNN
@@ -1648,7 +1647,7 @@ $EndComp
 Wire Wire Line
 	13150 5750 13150 5900
 $Comp
-L device:R R9
+L STM32_MegaBlaster-rescue:R-device R9
 U 1 1 5AEF7FE0
 P 13300 5750
 F 0 "R9" V 13200 5750 50  0000 C TNN
@@ -1659,7 +1658,7 @@ F 3 "" H 13300 5750 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L device:R R10
+L STM32_MegaBlaster-rescue:R-device R10
 U 1 1 5AEF80DC
 P 13300 5900
 F 0 "R10" V 13200 5900 50  0000 C TNN
@@ -1680,7 +1679,7 @@ Wire Wire Line
 Wire Wire Line
 	13500 5750 13500 7150
 $Comp
-L device:R R11
+L STM32_MegaBlaster-rescue:R-device R11
 U 1 1 5AF09462
 P 13900 6300
 F 0 "R11" V 13800 6300 50  0000 C CNN
@@ -1691,7 +1690,7 @@ F 3 "" H 13900 6300 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L device:C_Small C23
+L STM32_MegaBlaster-rescue:C_Small-device C23
 U 1 1 5AF0E645
 P 13900 5900
 F 0 "C23" V 14000 5900 50  0000 C CNN
@@ -1702,7 +1701,7 @@ F 3 "" H 13900 5900 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L device:C_Small C22
+L STM32_MegaBlaster-rescue:C_Small-device C22
 U 1 1 5AF0E736
 P 13900 5750
 F 0 "C22" V 13671 5750 50  0000 C CNN
@@ -1729,7 +1728,7 @@ Wire Wire Line
 Text GLabel 14000 5750 2    50   Input ~ 0
 AVCC_DIV2
 $Comp
-L device:R R24
+L STM32_MegaBlaster-rescue:R-device R24
 U 1 1 5AF1D355
 P 14200 6300
 F 0 "R24" V 14100 6300 50  0000 C CNN
@@ -1746,7 +1745,7 @@ Wire Wire Line
 	13450 6300 13750 6300
 Connection ~ 13450 6300
 $Comp
-L device:R R25
+L STM32_MegaBlaster-rescue:R-device R25
 U 1 1 5AF2A90F
 P 14000 7150
 F 0 "R25" V 13900 7150 50  0000 C CNN
@@ -1757,7 +1756,7 @@ F 3 "" H 14000 7150 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L device:C_Small C25
+L STM32_MegaBlaster-rescue:C_Small-device C25
 U 1 1 5AF2A916
 P 14000 6750
 F 0 "C25" V 14100 6750 50  0000 C CNN
@@ -1768,7 +1767,7 @@ F 3 "" H 14000 6750 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L device:C_Small C24
+L STM32_MegaBlaster-rescue:C_Small-device C24
 U 1 1 5AF2A91D
 P 14000 6600
 F 0 "C24" V 13800 6600 50  0000 C CNN
@@ -1794,7 +1793,7 @@ Wire Wire Line
 Text GLabel 14100 6600 2    50   Input ~ 0
 AVCC_DIV2
 $Comp
-L device:R R26
+L STM32_MegaBlaster-rescue:R-device R26
 U 1 1 5AF2A92D
 P 14400 7150
 F 0 "R26" V 14300 7150 50  0000 C CNN
@@ -1829,7 +1828,7 @@ Wire Wire Line
 Wire Wire Line
 	14750 5850 14750 5900
 $Comp
-L device:C_Small C26
+L STM32_MegaBlaster-rescue:C_Small-device C26
 U 1 1 5AF5377E
 P 14850 5850
 F 0 "C26" V 14950 5850 50  0000 C CNN
@@ -1848,7 +1847,7 @@ Connection ~ 15250 6200
 Wire Wire Line
 	15250 6200 15400 6200
 $Comp
-L linear:TL062 U8
+L STM32_MegaBlaster-rescue:TL062-linear U8
 U 2 1 5ADD1B80
 P 14950 7050
 F 0 "U8" H 15050 7150 50  0000 L CNN
@@ -1866,7 +1865,7 @@ Connection ~ 14600 7150
 Wire Wire Line
 	14600 7150 14650 7150
 $Comp
-L device:R R29
+L STM32_MegaBlaster-rescue:R-device R29
 U 1 1 5AF6FC2F
 P 14950 7450
 F 0 "R29" V 14850 7450 50  0000 C CNN
@@ -1877,7 +1876,7 @@ F 3 "" H 14950 7450 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L device:R R28
+L STM32_MegaBlaster-rescue:R-device R28
 U 1 1 5AF702CA
 P 14850 5600
 F 0 "R28" V 14750 5600 50  0000 C CNN
@@ -1909,7 +1908,7 @@ PRE_R
 Text GLabel 15400 7050 2    50   Input ~ 0
 PRE_L
 $Comp
-L switches:SW_Push_SPDT SW6
+L STM32_MegaBlaster-rescue:SW_Push_SPDT-switches SW6
 U 1 1 5AF99B60
 P 11900 5750
 F 0 "SW6" H 11900 5500 50  0000 C CNN
@@ -1960,7 +1959,7 @@ Wire Wire Line
 Wire Wire Line
 	10100 2550 9950 2550
 $Comp
-L device:CP1_Small C27
+L STM32_MegaBlaster-rescue:CP1_Small-device C27
 U 1 1 5B01CE2F
 P 10100 2450
 F 0 "C27" V 10150 2350 50  0000 C CNN
@@ -1971,7 +1970,7 @@ F 3 "" H 10100 2450 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:CP1_Small C28
+L STM32_MegaBlaster-rescue:CP1_Small-device C28
 U 1 1 5B01CFD2
 P 10200 2550
 F 0 "C28" V 10250 2450 50  0000 C CNN
@@ -1993,7 +1992,7 @@ F 3 "" H 10300 3050 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:CP1_Small C30
+L STM32_MegaBlaster-rescue:CP1_Small-device C30
 U 1 1 5B047AA8
 P 10200 2950
 F 0 "C30" V 10150 2850 50  0000 C CNN
@@ -2031,7 +2030,7 @@ F 3 "" H 9900 3150 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:CP1_Small C29
+L STM32_MegaBlaster-rescue:CP1_Small-device C29
 U 1 1 5B064A39
 P 10000 2650
 F 0 "C29" V 10000 2450 50  0000 C CNN
@@ -2078,7 +2077,7 @@ Connection ~ 12100 2750
 Wire Wire Line
 	12100 2750 12100 3200
 $Comp
-L device:L_Small L4
+L STM32_MegaBlaster-rescue:L_Small-device L4
 U 1 1 5B130F12
 P 12550 2250
 F 0 "L4" V 12600 2250 50  0000 C CNN
@@ -2089,7 +2088,7 @@ F 3 "" H 12550 2250 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:C_Small C33
+L STM32_MegaBlaster-rescue:C_Small-device C33
 U 1 1 5B131ECD
 P 12800 2150
 F 0 "C33" H 12892 2196 50  0000 L CNN
@@ -2121,7 +2120,7 @@ $EndComp
 Wire Wire Line
 	12800 2050 13200 2050
 $Comp
-L device:CP1_Small C34
+L STM32_MegaBlaster-rescue:CP1_Small-device C34
 U 1 1 5B15C314
 P 13500 2250
 F 0 "C34" V 13728 2250 50  0000 C CNN
@@ -2136,7 +2135,7 @@ Wire Wire Line
 Text GLabel 13600 2250 2    50   Input ~ 0
 L_OUT
 $Comp
-L device:C_Small C31
+L STM32_MegaBlaster-rescue:C_Small-device C31
 U 1 1 5B1677F8
 P 12300 2350
 F 0 "C31" V 12250 2250 50  0000 C CNN
@@ -2169,7 +2168,7 @@ F 3 "" H 12100 3200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:CP1_Small C36
+L STM32_MegaBlaster-rescue:CP1_Small-device C36
 U 1 1 5B210924
 P 13500 2950
 F 0 "C36" V 13728 2950 50  0000 C CNN
@@ -2366,7 +2365,7 @@ Wire Wire Line
 Wire Wire Line
 	14350 4150 14850 4150
 $Comp
-L device:CP1_Small C37
+L STM32_MegaBlaster-rescue:CP1_Small-device C37
 U 1 1 5AEBE891
 P 5700 2850
 F 0 "C37" V 5928 2850 50  0000 C CNN
@@ -2410,7 +2409,7 @@ Wire Notes Line
 Wire Wire Line
 	2700 2950 3100 2950
 $Comp
-L device:C_Small C32
+L STM32_MegaBlaster-rescue:C_Small-device C32
 U 1 1 5AF06548
 P 12300 2850
 F 0 "C32" V 12071 2850 50  0000 C CNN
@@ -2423,7 +2422,7 @@ $EndComp
 Wire Wire Line
 	12200 2850 12000 2850
 $Comp
-L device:L_Small L5
+L STM32_MegaBlaster-rescue:L_Small-device L5
 U 1 1 5AF1BD90
 P 12600 2950
 F 0 "L5" V 12785 2950 50  0000 C CNN
@@ -2441,7 +2440,7 @@ Connection ~ 12400 2950
 Wire Wire Line
 	12400 2950 12500 2950
 $Comp
-L device:C_Small C35
+L STM32_MegaBlaster-rescue:C_Small-device C35
 U 1 1 5AF31A51
 P 12800 3050
 F 0 "C35" H 12892 3096 50  0000 L CNN
@@ -2475,7 +2474,7 @@ F 3 "" H 12800 3150 50  0001 C CNN
 $EndComp
 Connection ~ 12800 3150
 $Comp
-L device:C_Small C38
+L STM32_MegaBlaster-rescue:C_Small-device C38
 U 1 1 5AF86E1C
 P 13050 5750
 F 0 "C38" V 12821 5750 50  0000 C CNN
