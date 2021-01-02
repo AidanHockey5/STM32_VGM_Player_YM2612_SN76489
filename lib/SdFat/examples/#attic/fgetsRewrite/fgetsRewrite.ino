@@ -1,6 +1,7 @@
 // Demo of rewriting a line read by fgets
 #include <SPI.h>
 #include "SdFat.h"
+#include "sdios.h"
 
 // SD card chip select pin
 const uint8_t chipSelect = SS;
@@ -65,7 +66,7 @@ void demoFgets() {
 //------------------------------------------------------------------------------
 void makeTestFile() {
   // create or open test file
-  SdFile wrfile("fgets.txt", O_WRITE | O_CREAT | O_TRUNC);
+  SdFile wrfile("fgets.txt", O_WRONLY | O_CREAT | O_TRUNC);
 
   // check for open error
   if (!wrfile.isOpen()) {

@@ -1,6 +1,7 @@
 // Demo of fgets function to read lines from a file.
 #include <SPI.h>
 #include "SdFat.h"
+#include "sdios.h"
 
 // SD chip select pin
 const uint8_t chipSelect = SS;
@@ -16,7 +17,7 @@ void demoFgets() {
   char line[25];
   int n;
   // open test file
-  SdFile rdfile("fgets.txt", O_READ);
+  SdFile rdfile("fgets.txt", O_RDONLY);
 
   // check for open error
   if (!rdfile.isOpen()) {
@@ -40,7 +41,7 @@ void demoFgets() {
 //------------------------------------------------------------------------------
 void makeTestFile() {
   // create or open test file
-  SdFile wrfile("fgets.txt", O_WRITE | O_CREAT | O_TRUNC);
+  SdFile wrfile("fgets.txt", O_WRONLY | O_CREAT | O_TRUNC);
 
   // check for open error
   if (!wrfile.isOpen()) {

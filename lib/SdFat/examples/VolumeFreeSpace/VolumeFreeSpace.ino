@@ -3,6 +3,7 @@
  */
 #include <SPI.h>
 #include "SdFat.h"
+#include "sdios.h"
 /*
  * SD chip select pin.  Common values are:
  *
@@ -61,7 +62,7 @@ void setup() {
   printFreeSpace();
   
   cout << F("Create and write to ") << TEST_FILE << endl;
-  if (!file.open(TEST_FILE, O_WRITE | O_CREAT)) {
+  if (!file.open(TEST_FILE, O_WRONLY | O_CREAT)) {
     sd.errorHalt(F("Create failed"));
   }
   file.print(F("Cause a cluster to be allocated"));

@@ -3,6 +3,7 @@
  */
 #include <SPI.h>
 #include "SdFat.h"
+#include "sdios.h"
 #include "FreeStack.h"
 
 // Set USE_SDIO to zero for SPI card access. 
@@ -109,7 +110,7 @@ void loop() {
   while (!Serial.available()) {
     SysCall::yield();
   }
-
+  cout << F("chipSelect: ") << int(chipSelect) << endl;
   cout << F("FreeStack: ") << FreeStack() << endl;
 
 #if USE_SDIO
@@ -130,7 +131,7 @@ void loop() {
   cidDmp();
 
   // open or create file - truncate existing file.
-  if (!file.open("bench.dat", O_CREAT | O_TRUNC | O_RDWR)) {
+  if (!file.open("bench.dat", O_RDWR | O_CREAT | O_TRUNC)) {
     error("open failed");
   }
 

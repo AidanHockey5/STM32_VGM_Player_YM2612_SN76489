@@ -151,6 +151,7 @@ void setup()
     countFile.close();
     numberOfFiles++;
   }
+
   countFile.close();
   SD.vwd()->rewind();
 
@@ -485,7 +486,6 @@ void handleButtons()
     {
       VGMEngine.maxLoops = maxLoops;
     }
-    
     
     drawOLEDTrackInfo();
     setISR();
