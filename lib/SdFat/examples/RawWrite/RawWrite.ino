@@ -12,7 +12,6 @@
  */
 #include <SPI.h>
 #include "SdFat.h"
-#include "sdios.h"
 #include "FreeStack.h"
 
 // SD chip select pin

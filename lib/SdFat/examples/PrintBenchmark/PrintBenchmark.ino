@@ -3,7 +3,6 @@
  */
 #include <SPI.h>
 #include "SdFat.h"
-#include "sdios.h"
 #include "FreeStack.h"
 
 // SD chip select pin
@@ -65,7 +64,7 @@ void loop() {
     char fileName[13] = "bench0.txt";
     fileName[5] = '0' + test;
     // open or create file - truncate existing file.
-    if (!file.open(fileName, O_RDWR | O_CREAT | O_TRUNC)) {
+    if (!file.open(fileName, O_CREAT | O_TRUNC | O_RDWR)) {
       error("open failed");
     }
     maxLatency = 0;

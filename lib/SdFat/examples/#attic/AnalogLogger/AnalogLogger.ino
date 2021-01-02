@@ -2,7 +2,6 @@
 // uses RTClib from https://github.com/adafruit/RTClib
 #include <SPI.h>
 #include "SdFat.h"
-#include "sdios.h"
 #include "FreeStack.h"
 
 #define SD_CHIP_SELECT  SS  // SD chip select pin

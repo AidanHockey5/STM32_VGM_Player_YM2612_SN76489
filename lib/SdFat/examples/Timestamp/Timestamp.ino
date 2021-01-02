@@ -4,7 +4,6 @@
  */
 #include <SPI.h>
 #include "SdFat.h"
-#include "sdios.h"
 
 SdFat sd;
 
@@ -96,7 +95,7 @@ void setup(void) {
   sd.remove("stamp.txt");
 
   // create a new file with default timestamps
-  if (!file.open("default.txt", O_WRONLY | O_CREAT)) {
+  if (!file.open("default.txt", O_CREAT | O_WRITE)) {
     error("open default.txt failed");
   }
   cout << F("\nOpen with default times\n");
@@ -119,7 +118,7 @@ void setup(void) {
   SdFile::dateTimeCallback(dateTime);
 
   // create a new file with callback timestamps
-  if (!file.open("callback.txt", O_WRONLY | O_CREAT)) {
+  if (!file.open("callback.txt", O_CREAT | O_WRITE)) {
     error("open callback.txt failed");
   }
   cout << ("\nOpen with callback times\n");
@@ -151,7 +150,7 @@ void setup(void) {
   SdFile::dateTimeCallbackCancel();
 
   // create a new file with default timestamps
-  if (!file.open("stamp.txt", O_WRONLY | O_CREAT)) {
+  if (!file.open("stamp.txt", O_CREAT | O_WRITE)) {
     error("open stamp.txt failed");
   }
   // set creation date time

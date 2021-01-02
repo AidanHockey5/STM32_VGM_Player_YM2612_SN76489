@@ -1,26 +1,21 @@
-/**
- * Copyright (c) 20011-2017 Bill Greiman
- * This file is part of the SdFat library for SD memory cards.
+/* Arduino SdFat Library
+ * Copyright (C) 2011 by William Greiman
  *
- * MIT License
+ * This file is part of the Arduino SdFat Library
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * This Library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
+ * This Library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with the Arduino SdFat Library.  If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 #include <SdFatTestSuite.h>
 static uint16_t failCount;
@@ -41,8 +36,8 @@ void testBegin() {
   while (Serial.read() <= 0) {}
   delay(200); // Catch Due reset problem
 
-  testOut->print(F("FreeStack: "));
-  testOut->println(FreeStack());
+  testOut->print(F("FreeRam: "));
+  testOut->println(FreeRam());
   testOut->println();
   failCount = 0;
   testCount = 0;
@@ -51,8 +46,8 @@ void testBegin() {
 void testEnd() {
   testOut->println();
   testOut->println(F("Compiled: " __DATE__ " " __TIME__));
-  testOut->print(F("FreeStack: "));
-  testOut->println(FreeStack());
+  testOut->print(F("FreeRam: "));
+  testOut->println(FreeRam());
   testOut->print(F("Test count: "));
   testOut->println(testCount);
   testOut->print(F("Fail count: "));

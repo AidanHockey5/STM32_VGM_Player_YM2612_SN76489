@@ -1,18 +1,15 @@
 /*
  * Example use of chdir(), ls(), mkdir(), and  rmdir().
  */
-#include <SPI.h>
+#include <SPI.h> 
 #include "SdFat.h"
-#include "sdios.h"
+
 // SD card chip select pin.
 const uint8_t chipSelect = SS;
 //------------------------------------------------------------------------------
 
 // File system object.
 SdFat sd;
-
-// Directory file.
-SdFile root;
 
 // Use for file creation in folders.
 SdFile file;
@@ -31,8 +28,8 @@ ArduinoInStream cin(Serial, cinBuf, sizeof(cinBuf));
 //------------------------------------------------------------------------------
 void setup() {
   Serial.begin(9600);
-
-  // Wait for USB Serial
+  
+  // Wait for USB Serial 
   while (!Serial) {
     SysCall::yield();
   }
@@ -42,23 +39,21 @@ void setup() {
   // Wait for input line and discard.
   cin.readline();
   cout << endl;
-
+  
   // Initialize at the highest speed supported by the board that is
   // not over 50 MHz. Try a lower speed if SPI errors occur.
   if (!sd.begin(chipSelect, SD_SCK_MHZ(50))) {
     sd.initErrorHalt();
   }
-  if (sd.exists("Folder1")
+  if (sd.exists("Folder1") 
     || sd.exists("Folder1/file1.txt")
     || sd.exists("Folder1/File2.txt")) {
     error("Please remove existing Folder1, file1.txt, and File2.txt");
   }
 
   int rootFileCount = 0;
-  if (!root.open("/")) {
-    error("open root failed");
-  }
-  while (file.openNext(&root, O_RDONLY)) {
+  sd.vwd()->rewind(); 
+  while (file.openNext(sd.vwd(), O_READ)) {
     if (!file.isHidden()) {
       rootFileCount++;
     }
@@ -78,7 +73,7 @@ void setup() {
   cout << F("Created Folder1\n");
 
   // Create a file in Folder1 using a path.
-  if (!file.open("Folder1/file1.txt", O_WRONLY | O_CREAT)) {
+  if (!file.open("Folder1/file1.txt", O_CREAT | O_WRITE)) {
     error("create Folder1/file1.txt failed");
   }
   file.close();
@@ -91,7 +86,7 @@ void setup() {
   cout << F("chdir to Folder1\n");
 
   // Create File2.txt in current directory.
-  if (!file.open("File2.txt", O_WRONLY | O_CREAT)) {
+  if (!file.open("File2.txt", O_CREAT | O_WRITE)) {
     error("create File2.txt failed");
   }
   file.close();

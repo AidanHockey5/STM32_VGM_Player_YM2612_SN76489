@@ -1,31 +1,27 @@
-/**
- * Copyright (c) 2011-2018 Bill Greiman
- * This file is part of the SdFat library for SD memory cards.
+/* FatLib Library
+ * Copyright (C) 2013 by William Greiman
  *
- * MIT License
+ * This file is part of the FatLib Library
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * This Library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
+ * This Library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with the FatLib Library.  If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 #ifndef FatFileSystem_h
 #define FatFileSystem_h
 #include "FatVolume.h"
 #include "FatFile.h"
+#include "ArduinoStream.h"
 #include "ArduinoFiles.h"
 /**
  * \file
@@ -40,7 +36,7 @@ class FatFileSystem : public  FatVolume {
  public:
   /**
    * Initialize an FatFileSystem object.
-   * \param[in] blockDev Device block driver.
+   * \param[in] blockDev Device block driver.   
    * \param[in] part partition to initialize.
    * \return The value true is returned for success and
    * the value false is returned for failure.
@@ -61,11 +57,9 @@ class FatFileSystem : public  FatVolume {
    * LS_SIZE - %Print file size.
    *
    * LS_R - Recursive list of subdirectories.
-   *
-   * \return true for success or false if an error occurred.
    */
-  bool ls(uint8_t flags = 0) {
-    return ls(&Serial, flags);
+  void ls(uint8_t flags = 0) {
+    ls(&Serial, flags);
   }
   /** List the directory contents of a directory to Serial.
    *
@@ -78,31 +72,29 @@ class FatFileSystem : public  FatVolume {
    * LS_SIZE - %Print file size.
    *
    * LS_R - Recursive list of subdirectories.
-   *
-   * \return true for success or false if an error occurred.
    */
-  bool ls(const char* path, uint8_t flags = 0) {
-    return ls(&Serial, path, flags);
+  void ls(const char* path, uint8_t flags = 0) {
+    ls(&Serial, path, flags);
   }
   /** open a file
    *
    * \param[in] path location of file to be opened.
-   * \param[in] oflag open flags.
+   * \param[in] mode open mode flags.
    * \return a File object.
    */
-  File open(const char *path, oflag_t oflag = FILE_READ) {
+  File open(const char *path, uint8_t mode = FILE_READ) {
     File tmpFile;
-    tmpFile.open(vwd(), path, oflag);
+    tmpFile.open(vwd(), path, mode);
     return tmpFile;
   }
   /** open a file
    *
    * \param[in] path location of file to be opened.
-   * \param[in] oflag open flags.
+   * \param[in] mode open mode flags.
    * \return a File object.
    */
-  File open(const String &path, oflag_t oflag = FILE_READ) {
-    return open(path.c_str(), oflag );
+  File open(const String &path, uint8_t mode = FILE_READ) {
+    return open(path.c_str(), mode );
   }
 #endif  // ENABLE_ARDUINO_FEATURES
   /** Change a volume's working directory to root
@@ -147,7 +139,7 @@ class FatFileSystem : public  FatVolume {
     if (path[0] == '/' && path[1] == '\0') {
       return chdir(set_cwd);
     }
-    if (!dir.open(vwd(), path, O_RDONLY)) {
+    if (!dir.open(vwd(), path, O_READ)) {
       goto fail;
     }
     if (!dir.isDir()) {
@@ -198,11 +190,9 @@ fail:
    * LS_SIZE - %Print file size.
    *
    * LS_R - Recursive list of subdirectories.
-   *
-   * \return true for success or false if an error occurred.
    */
-  bool ls(print_t* pr, uint8_t flags = 0) {
-    return vwd()->ls(pr, flags);
+  void ls(print_t* pr, uint8_t flags = 0) {
+    vwd()->ls(pr, flags);
   }
   //----------------------------------------------------------------------------
   /** List the directory contents of a directory.
@@ -218,12 +208,11 @@ fail:
    * LS_SIZE - %Print file size.
    *
    * LS_R - Recursive list of subdirectories.
-   *
-   * \return true for success or false if an error occurred.
    */
-  bool ls(print_t* pr, const char* path, uint8_t flags) {
+  void ls(print_t* pr, const char* path, uint8_t flags) {
     FatFile dir;
-    return dir.open(vwd(), path, O_RDONLY) && dir.ls(pr, flags);
+    dir.open(vwd(), path, O_READ);
+    dir.ls(pr, flags);
   }
   //----------------------------------------------------------------------------
   /** Make a subdirectory in the volume working directory.
@@ -268,7 +257,7 @@ fail:
    */
   bool rename(const char *oldPath, const char *newPath) {
     FatFile file;
-    if (!file.open(vwd(), oldPath, O_RDONLY)) {
+    if (!file.open(vwd(), oldPath, O_READ)) {
       return false;
     }
     return file.rename(vwd(), newPath);
@@ -285,7 +274,7 @@ fail:
    */
   bool rmdir(const char* path) {
     FatFile sub;
-    if (!sub.open(vwd(), path, O_RDONLY)) {
+    if (!sub.open(vwd(), path, O_READ)) {
       return false;
     }
     return sub.rmdir();
@@ -303,7 +292,7 @@ fail:
    */
   bool truncate(const char* path, uint32_t length) {
     FatFile file;
-    if (!file.open(vwd(), path, O_WRONLY)) {
+    if (!file.open(vwd(), path, O_WRITE)) {
       return false;
     }
     return file.truncate(length);

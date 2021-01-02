@@ -9,15 +9,13 @@
 // set ENABLE_EXTENDED_TRANSFER_CLASS non-zero to use faster EX classes
 
 // Use first SPI port
-SdFat sd1;
-// SdFatEX sd1;
+SdFat sd1(1);
+// SdFatEX sd1(1);
 const uint8_t SD1_CS = PA4;  // chip select for sd1
 
 // Use second SPI port
-SPIClass SPI_2(2);
-SdFat sd2(&SPI_2);
-// SdFatEX sd2(&SPI_2);
-
+SdFat sd2(2);
+// SdFatEX sd2(2);
 const uint8_t SD2_CS = PB12;   // chip select for sd2
 
 const uint8_t BUF_DIM = 100;
@@ -35,7 +33,11 @@ void setup() {
   Serial.begin(9600);
   // Wait for USB Serial 
   while (!Serial) {
+    SysCall::yield();
   }
+  Serial.print(F("FreeStack: "));
+
+  Serial.println(FreeStack());
 
   // fill buffer with known data
   for (size_t i = 0; i < sizeof(buf); i++) {
@@ -44,9 +46,8 @@ void setup() {
 
   Serial.println(F("type any character to start"));
   while (!Serial.available()) {
+    SysCall::yield();
   }
-  Serial.print(F("FreeStack: "));
-  Serial.println(FreeStack());
 
   // initialize the first card
   if (!sd1.begin(SD1_CS, SD_SCK_MHZ(18))) {
@@ -122,7 +123,7 @@ void setup() {
 
   // create or open /Dir2/copy.bin and truncate it to zero length
   SdFile file2;
-  if (!file2.open("copy.bin", O_WRONLY | O_CREAT | O_TRUNC)) {
+  if (!file2.open("copy.bin", O_WRITE | O_CREAT | O_TRUNC)) {
     sd2.errorExit("file2");
   }
   Serial.println(F("Copying test.bin to copy.bin"));

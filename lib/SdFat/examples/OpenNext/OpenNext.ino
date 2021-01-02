@@ -10,7 +10,6 @@ const uint8_t chipSelect = SS;
 // file system object
 SdFat sd;
 
-SdFile root;
 SdFile file;
 //------------------------------------------------------------------------------
 void setup() {
@@ -31,13 +30,12 @@ void setup() {
   if (!sd.begin(chipSelect, SD_SCK_MHZ(50))) {
     sd.initErrorHalt();
   }
-  if (!root.open("/")) {
-    sd.errorHalt("open root failed");
-  }
-  // Open next file in root.
-  // Warning, openNext starts at the current directory position
-  // so a rewind of the directory may be required.
-  while (file.openNext(&root, O_RDONLY)) {
+
+  // Open next file in root.  The volume working directory, vwd, is root.
+  // Warning, openNext starts at the current position of sd.vwd() so a
+  // rewind may be neccessary in your application.
+  sd.vwd()->rewind();
+  while (file.openNext(sd.vwd(), O_READ)) {
     file.printFileSize(&Serial);
     Serial.write(' ');
     file.printModifyDateTime(&Serial);
@@ -50,11 +48,7 @@ void setup() {
     Serial.println();
     file.close();
   }
-  if (root.getError()) {
-    Serial.println("openNext failed");
-  } else {
-    Serial.println("Done!");
-  }
+  Serial.println("Done!");
 }
 //------------------------------------------------------------------------------
 void loop() {}

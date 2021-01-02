@@ -1,26 +1,21 @@
-/**
- * Copyright (c) 2011-2018 Bill Greiman
- * This file is part of the SdFat library for SD memory cards.
+/* FatLib Library
+ * Copyright (C) 2012 by William Greiman
  *
- * MIT License
+ * This file is part of the FatLib Library
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * This Library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
+ * This Library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with the FatLib Library.  If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 #include <math.h>
 #include "FatFile.h"
@@ -96,16 +91,12 @@ void FatFile::dmpFile(print_t* pr, uint32_t pos, size_t n) {
   pr->write('\n');
 }
 //------------------------------------------------------------------------------
-bool FatFile::ls(print_t* pr, uint8_t flags, uint8_t indent) {
+void FatFile::ls(print_t* pr, uint8_t flags, uint8_t indent) {
   FatFile file;
-  if (!isDir() || getError()) {
-    DBG_FAIL_MACRO;
-    goto fail;
-  }
   rewind();
-  while (file.openNext(this, O_RDONLY)) {
-    if (!file.isHidden() || (flags & LS_A)) {
+  while (file.openNext(this, O_READ)) {
     // indent for dir level
+    if (!file.isHidden() || (flags & LS_A)) {
       for (uint8_t i = 0; i < indent; i++) {
         pr->write(' ');
       }
@@ -124,22 +115,11 @@ bool FatFile::ls(print_t* pr, uint8_t flags, uint8_t indent) {
       pr->write('\r');
       pr->write('\n');
       if ((flags & LS_R) && file.isDir()) {
-        if (!file.ls(pr, flags, indent + 2)) {
-          DBG_FAIL_MACRO;
-          goto fail;
-        }
+        file.ls(pr, flags, indent + 2);
       }
     }
     file.close();
   }
-  if (getError()) {
-    DBG_FAIL_MACRO;
-    goto fail;
-  }
-  return true;
-
- fail:
-  return false;
 }
 //------------------------------------------------------------------------------
 bool FatFile::printCreateDateTime(print_t* pr) {

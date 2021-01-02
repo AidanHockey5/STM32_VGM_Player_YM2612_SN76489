@@ -1,36 +1,31 @@
-/**
- * Copyright (c) 2011-2018 Bill Greiman
- * This file is part of the SdFat library for SD memory cards.
+/* Arduino RamDisk Library
+ * Copyright (C) 2014 by William Greiman
  *
- * MIT License
+ * This file is part of the Arduino RamDisk Library
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * This Library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
+ * This Library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with the Arduino RamDisk Library.  If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 #include "StdioStream.h"
 #include "FmtNumber.h"
 //------------------------------------------------------------------------------
 int StdioStream::fclose() {
   int rtn = 0;
-  if (!m_status) {
+  if (!m_flags) {
     return EOF;
   }
-  if (m_status & S_SWR) {
+  if (m_flags & F_SWR) {
     if (!flushBuf()) {
       rtn = EOF;
     }
@@ -40,12 +35,12 @@ int StdioStream::fclose() {
   }
   m_r = 0;
   m_w = 0;
-  m_status = 0;
+  m_flags = 0;
   return rtn;
 }
 //------------------------------------------------------------------------------
 int StdioStream::fflush() {
-  if ((m_status & (S_SWR | S_SRW)) && !(m_status & S_SRD)) {
+  if ((m_flags & (F_SWR | F_SRW)) && !(m_flags & F_SRD)) {
     if (flushBuf() && FatFile::sync()) {
       return 0;
     }
@@ -95,25 +90,21 @@ char* StdioStream::fgets(char* str, size_t num, size_t* len) {
 }
 //------------------------------------------------------------------------------
 bool StdioStream::fopen(const char* path, const char* mode) {
-  oflag_t oflag;
-  uint8_t m;
+  uint8_t oflag;
   switch (*mode++) {
   case 'a':
-    m = O_WRONLY;
-    oflag = O_CREAT | O_APPEND;
-    m_status = S_SWR;
+    m_flags = F_SWR;
+    oflag = O_WRITE | O_CREAT | O_APPEND | O_AT_END;
     break;
 
   case 'r':
-    m = O_RDONLY;
-    oflag = 0;
-    m_status = S_SRD;
+    m_flags = F_SRD;
+    oflag = O_READ;
     break;
 
   case 'w':
-    m = O_WRONLY;
-    oflag = O_CREAT | O_TRUNC;
-    m_status = S_SWR;
+    m_flags = F_SWR;
+    oflag = O_WRITE | O_CREAT | O_TRUNC;
     break;
 
   default:
@@ -122,8 +113,8 @@ bool StdioStream::fopen(const char* path, const char* mode) {
   while (*mode) {
     switch (*mode++) {
     case '+':
-      m_status = S_SRW;
-      m = O_RDWR;
+      m_flags |= F_SRW;
+      oflag |= O_RDWR;
       break;
 
     case 'b':
@@ -137,8 +128,9 @@ bool StdioStream::fopen(const char* path, const char* mode) {
       goto fail;
     }
   }
-  oflag |= m;
-
+  if ((oflag & O_EXCL) && !(oflag & O_WRITE)) {
+    goto fail;
+  }
   if (!FatFile::open(path, oflag)) {
     goto fail;
   }
@@ -148,7 +140,7 @@ bool StdioStream::fopen(const char* path, const char* mode) {
   return true;
 
 fail:
-  m_status = 0;
+  m_flags = 0;
   return false;
 }
 //------------------------------------------------------------------------------
@@ -181,7 +173,7 @@ size_t StdioStream::fread(void* ptr, size_t size, size_t count) {
 //------------------------------------------------------------------------------
 int StdioStream::fseek(int32_t offset, int origin) {
   int32_t pos;
-  if (m_status & S_SWR) {
+  if (m_flags & F_SWR) {
     if (!flushBuf()) {
       goto fail;
     }
@@ -223,12 +215,12 @@ fail:
 //------------------------------------------------------------------------------
 int32_t StdioStream::ftell() {
   uint32_t pos = FatFile::curPosition();
-  if (m_status & S_SRD) {
+  if (m_flags & F_SRD) {
     if (m_r > pos) {
       return -1L;
     }
     pos -= m_r;
-  } else if (m_status & S_SWR) {
+  } else if (m_flags & F_SWR) {
     pos += m_p - m_buf;
   }
   return pos;
@@ -236,6 +228,28 @@ int32_t StdioStream::ftell() {
 //------------------------------------------------------------------------------
 size_t StdioStream::fwrite(const void* ptr, size_t size, size_t count) {
   return write(ptr, count*size) < 0 ? EOF : count;
+#if 0  ////////////////////////////////////////////////////////////////////////////////////
+  const uint8_t* src = static_cast<const uint8_t*>(ptr);
+  size_t total = count*size;
+  if (total == 0) {
+    return 0;
+  }
+  size_t todo = total;
+
+  while (todo > m_w) {
+    memcpy(m_p, src, m_w);
+    m_p += m_w;
+    src += m_w;
+    todo -= m_w;
+    if (!flushBuf()) {
+      return (total - todo)/size;
+    }
+  }
+  memcpy(m_p, src, todo);
+  m_p += todo;
+  m_w -= todo;
+  return count;
+#endif  //////////////////////////////////////////////////////////////////////////////////
 }
 //------------------------------------------------------------------------------
 int StdioStream::write(const void* buf, size_t count) {
@@ -393,7 +407,7 @@ int StdioStream::printHex(uint32_t n) {
 }
 //------------------------------------------------------------------------------
 bool StdioStream::rewind() {
-  if (m_status & S_SWR) {
+  if (m_flags & F_SWR) {
     if (!flushBuf()) {
       return false;
     }
@@ -409,7 +423,7 @@ int StdioStream::ungetc(int c) {
     return EOF;
   }
   // error if not reading.
-  if ((m_status & S_SRD) == 0) {
+  if ((m_flags & F_SRD) == 0) {
     return EOF;
   }
   // error if no space.
@@ -417,7 +431,7 @@ int StdioStream::ungetc(int c) {
     return EOF;
   }
   m_r++;
-  m_status &= ~S_EOF;
+  m_flags &= ~F_EOF;
   return *--m_p = (uint8_t)c;
 }
 //==============================================================================
@@ -433,25 +447,25 @@ int StdioStream::fillGet() {
 //------------------------------------------------------------------------------
 // private
 bool StdioStream::fillBuf() {
-  if (!(m_status &
-        S_SRD)) {  // check for S_ERR and S_EOF ??/////////////////
-    if (!(m_status & S_SRW)) {
-      m_status |= S_ERR;
+  if (!(m_flags &
+        F_SRD)) {  // check for F_ERR and F_EOF ??/////////////////
+    if (!(m_flags & F_SRW)) {
+      m_flags |= F_ERR;
       return false;
     }
-    if (m_status & S_SWR) {
+    if (m_flags & F_SWR) {
       if (!flushBuf()) {
         return false;
       }
-      m_status &= ~S_SWR;
-      m_status |= S_SRD;
+      m_flags &= ~F_SWR;
+      m_flags |= F_SRD;
       m_w = 0;
     }
   }
   m_p = m_buf + UNGETC_BUF_SIZE;
   int nr = FatFile::read(m_p, sizeof(m_buf) - UNGETC_BUF_SIZE);
   if (nr <= 0) {
-    m_status |= nr < 0 ? S_ERR : S_EOF;
+    m_flags |= nr < 0 ? F_ERR : F_EOF;
     m_r = 0;
     return false;
   }
@@ -461,14 +475,14 @@ bool StdioStream::fillBuf() {
 //------------------------------------------------------------------------------
 // private
 bool StdioStream::flushBuf() {
-  if (!(m_status &
-        S_SWR)) {  // check for S_ERR ??////////////////////////
-    if (!(m_status & S_SRW)) {
-      m_status |= S_ERR;
+  if (!(m_flags &
+        F_SWR)) {  // check for F_ERR ??////////////////////////
+    if (!(m_flags & F_SRW)) {
+      m_flags |= F_ERR;
       return false;
     }
-    m_status &= ~S_SRD;
-    m_status |= S_SWR;
+    m_flags &= ~F_SRD;
+    m_flags |= F_SWR;
     m_r = 0;
     m_w = sizeof(m_buf);
     m_p = m_buf;
@@ -480,7 +494,7 @@ bool StdioStream::flushBuf() {
   if (FatFile::write(m_buf, n) == n) {
     return true;
   }
-  m_status |= S_ERR;
+  m_flags |= F_ERR;
   return false;
 }
 //------------------------------------------------------------------------------

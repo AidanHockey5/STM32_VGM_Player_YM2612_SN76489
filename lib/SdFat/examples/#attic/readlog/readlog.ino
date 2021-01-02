@@ -4,7 +4,6 @@
  */
 #include <SPI.h>
 #include "SdFat.h"
-#include "sdios.h"
 
 // SD chip select pin
 const uint8_t chipSelect = SS;
