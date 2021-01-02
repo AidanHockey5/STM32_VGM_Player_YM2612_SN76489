@@ -9,13 +9,13 @@
 class YM2612
 {
 public:
-    YM2612(ChipClock* _clk, Bus* _bus, uint8_t _CS, uint8_t _RD, uint8_t _WR, uint8_t _A0, uint8_t _A1, uint8_t _IC);
+    YM2612(Bus* _bus, uint8_t _CS, uint8_t _RD, uint8_t _WR, uint8_t _A0, uint8_t _A1, uint8_t _IC);
     void write(uint8_t addr, uint8_t data, bool a1);
     void reset();
     void setClock(uint32_t frq);
     ~YM2612();
 private:
-    ChipClock* clk;
+    //ChipClock* clk;
     uint32_t clkfrq;
     Bus* bus;
     uint8_t CS;

@@ -1,6 +1,6 @@
 #include "SN76489.h"
 
-SN76489::SN76489(ChipClock* _clk, Bus* _bus, uint8_t _WE)
+SN76489::SN76489(Bus* _bus, uint8_t _WE)
 {
     bus = _bus;
     WE = _WE;
@@ -10,7 +10,7 @@ SN76489::SN76489(ChipClock* _clk, Bus* _bus, uint8_t _WE)
 
 void SN76489::setClock(uint32_t frq)
 {
-    clk->SetFreq(frq);
+    //clk->SetFreq(frq);
     clkfrq = frq;
 }
 

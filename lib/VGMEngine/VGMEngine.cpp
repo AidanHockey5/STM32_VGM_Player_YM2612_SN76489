@@ -1,5 +1,8 @@
 #include "VGMEngine.h"
 
+LTC6904 ltcOPN(0);
+LTC6904 ltcSN(1);
+
 VGMEngineClass::VGMEngineClass()
 {
     MegaStream_Create(&stream, buf, VGM_BUF_SIZE);
@@ -28,8 +31,9 @@ bool VGMEngineClass::begin(File *f)
     {
         loopPos = header.EoF+4-1;
     }
-    
+
     chipSetup();
+
     #if ENABLE_SPIRAM
         ram.Init();
     #endif
@@ -173,12 +177,14 @@ bool VGMEngineClass::load(bool singleChunk)
 void VGMEngineClass::chipSetup()
 {
     #if ENABLE_SN76489
-    sn76489->setClock(header.sn76489Clock);
+    //sn76489->setClock(header.sn76489Clock);
+    ltcSN.SetFrequency(header.sn76489Clock);
     delay(10);
     sn76489->reset();
     #endif
     #if ENABLE_YM2612
-    ym2612->setClock(header.ym2612Clock);
+    //ym2612->setClock(header.ym2612Clock);
+    ltcOPN.SetFrequency(header.ym2612Clock);
     delay(10);
     ym2612->reset();
     #endif

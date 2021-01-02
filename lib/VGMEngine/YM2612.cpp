@@ -1,8 +1,8 @@
 #include "YM2612.h"
 
-YM2612::YM2612(ChipClock* _clk, Bus* _bus, uint8_t _CS, uint8_t _RD, uint8_t _WR, uint8_t _A0, uint8_t _A1, uint8_t _IC)
+YM2612::YM2612(Bus* _bus, uint8_t _CS, uint8_t _RD, uint8_t _WR, uint8_t _A0, uint8_t _A1, uint8_t _IC)
 {
-    clk = _clk;
+    //clk = _clk;
     bus = _bus;
     CS = _CS;
     RD = _RD;
@@ -72,7 +72,7 @@ void YM2612::reset()
 
 void YM2612::setClock(uint32_t frq)
 {
-    clk->SetFreq(frq);
+    //clk->SetFreq(frq);
     clkfrq = frq;
 }
 

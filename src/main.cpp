@@ -48,16 +48,11 @@ uint32_t readBuffer32();
 uint32_t readSD32();
 uint16_t parseVGM();
 
-LTC6904 ltcOPN(0);
-LTC6904 ltcSN(1);
-
-ChipClock opnClock(&ltcOPN);
-ChipClock snClock(&ltcSN);
 
 Bus bus(PB8, PB9, PC13, PC14, PC15, PA0, PA1, PA2);
 
-YM2612 opn(&opnClock, &bus, PB3, NULL, PA12, PA11, PB0, PB4);
-SN76489 sn(&snClock, &bus, PB5);
+YM2612 opn(&bus, PB3, NULL, PA12, PA11, PB0, PB4);
+SN76489 sn(&bus, PB5);
 
 //OLED
 U8G2_SH1106_128X64_NONAME_F_HW_I2C oled(U8G2_R0);
@@ -113,9 +108,9 @@ void setup()
   SPI.begin();
   Serial.begin(115200);
 
-  //Clocks
-  ltcOPN.SetFrequency(7670454); //PAL 7600489 //NTSC 7670453
-  ltcSN.SetFrequency(3579545);  //PAL 3546894 //NTSC 3579545 
+  // //Clocks
+  // ltcOPN.SetFrequency(7670454); //PAL 7600489 //NTSC 7670453
+  // ltcSN.SetFrequency(3579545);  //PAL 3546894 //NTSC 3579545 
 
   //Set Chips
   VGMEngine.ym2612 = &opn;
