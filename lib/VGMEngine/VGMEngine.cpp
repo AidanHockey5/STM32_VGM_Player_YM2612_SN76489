@@ -218,7 +218,6 @@ uint16_t VGMEngineClass::getLoops()
 uint16_t VGMEngineClass::parseVGM()
 {
     uint8_t cmd;
-    ready = false;
     while(true)
     {
         cmd = readBufOne();
@@ -238,20 +237,16 @@ uint16_t VGMEngineClass::parseVGM()
                 ym2612->write(readBufOne(), readBufOne(), 1);
             break;
             case 0x61:
-                ready = true;
                 return readBuf16();
             case 0x62:
-                ready = true;
                 return 735;
             case 0x63:
-                ready = true;
                 return 882;
             case 0x67:
             {
                 //who puttin' 0x67's in MUH stream?
                 //Account for this later, seems to be an edge-case in non-standard VGMs since 0x67's are usually in one big block at the start but can technically be found any time because the VGM spec is retarded.
                 Serial.println("0x67 PCM STORE command encountered mid stream");
-                ready = true;
                 break;
             }
             case 0x70:
@@ -270,7 +265,6 @@ uint16_t VGMEngineClass::parseVGM()
             case 0x7D:
             case 0x7E:
             case 0x7F:
-                ready = true;
                 return (cmd & 0x0F)+1;//+1; Removed +1. Remember, even if you return a 0, there is always going to a latency of at least 1 tick
             case 0x80:
             case 0x81:
@@ -290,7 +284,6 @@ uint16_t VGMEngineClass::parseVGM()
             case 0x8F:
             {
                 ym2612->write(0x2A, ram.ReadByte(pcmBufferPosition++), 0);
-                ready = true;
                 uint8_t wait = (cmd & 0x0F);
                 if(wait == 0)
                     break;
@@ -304,11 +297,9 @@ uint16_t VGMEngineClass::parseVGM()
             {
                 //Loop
                 loopCount++;
-                ready = true;
                 return 0;
             }
             default:
-                ready = true;
                 Serial.print("E:"); Serial.println(cmd, HEX);
                 return 0;
         }
