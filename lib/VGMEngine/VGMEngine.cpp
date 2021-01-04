@@ -112,6 +112,11 @@ bool VGMEngineClass::storePCM(bool skip)
         file->read(); //datatype
         uint32_t pcmSize = 0;
         file->read(&pcmSize, 4); //PCM chunk size
+        if(skip)            //On loop, you'll want to just skip the PCM block since it's already loaded.
+        {
+            file->seekCur(pcmSize);
+            return false;
+        }
         if(pcmSize > MAX_PCM_BUFFER_SIZE)
         {
             return true; //todo: Error out here or go to next track. return is temporary
@@ -120,10 +125,7 @@ bool VGMEngineClass::storePCM(bool skip)
         {
             for(uint32_t i = 0; i<pcmSize; i++)
             {
-                if(skip)            //On loop, you'll want to just skip the PCM block since it's already loaded.
-                    file->read();
-                else
-                    ram.WriteByte(i, file->read());
+                ram.WriteByte(i, file->read());
             }
         }
     } 
