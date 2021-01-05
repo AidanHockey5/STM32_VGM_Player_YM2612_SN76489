@@ -66,7 +66,16 @@ Use this guide to help you assemble the Mega Blaster. Hover your cursor over the
 
 Programming must be done through the built-in serial port. YOU CAN NOT USE AN STLINK FOR PROGRAMMING.
 
-I have made a quick video guide on how to program the MegaBlaster. It's pretty simple!
+You have two programming options: Using the flashing tool OR flashing from source.
+
+[DOWNLOAD THE FLASHING TOOL HERE](https://www.aidanlawrence.com/tools/ee/megablaster/MegaFlasher_MB.zip)
+
+Windows users can just use the pre-compiled Flash.exe program to skip worrying about Python installs or dependancies.
+All other operating system users can simply run the Flash.py script using Python 3.0+.
+
+Read the Readme file included with the tool for usage instructions and python dependancies.
+
+I have also made a quick video guide on how to program the MegaBlaster from source. It's pretty simple!
 
 https://youtu.be/sSx3_d5n6gs
 
