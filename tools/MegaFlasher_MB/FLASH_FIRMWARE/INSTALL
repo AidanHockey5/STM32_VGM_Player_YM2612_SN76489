@@ -1,0 +1,16 @@
+
+Building stm32flash
+
+A set of static makefiles is provided that should work on most operating
+systems with a standard build environment, for instance GNU make and gcc.
+
+1. Build executable
+
+	make
+
+2. Install executable and manual page (optional)
+
+	make install
+
+   The install location base can be set with the PREFIX flag (default
+   is /usr/local), e.g. make install PREFIX=/opt
