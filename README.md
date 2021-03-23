@@ -1,3 +1,8 @@
+# This Version of the Project is now Deprecated
+This is the old version of the Mega Blaster Project. Please visit this repo for the latest and greatest Mega Blaster 2 source material
+https://github.com/AidanHockey5/MegaBlaster2
+
+
 # Mega Blaster
 
 See this project in action here: https://www.youtube.com/watch?v=WoAp2-gWaLM
